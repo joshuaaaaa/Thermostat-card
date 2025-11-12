@@ -1,21 +1,31 @@
 # 🌡️ Thermostat Control Card pro Home Assistant
 
-Moderní a barevná custom karta pro ovládání termostatů v Home Assistant s podporou HACS.
+Ultramoderní glassmorphic karta pro ovládání termostatů s designem inspirovaným TOP trendy 2025.
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)
 ![HACS](https://img.shields.io/badge/HACS-compatible-success.svg)
 ![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2024.1+-blue.svg)
+![Design](https://img.shields.io/badge/Design-2025%20Trends-ff69b4.svg)
 
 ## ✨ Funkce
 
-- 🎨 **Moderní Material Design 3** s gradientními pozadími a pastelové barvy
-- 🌡️ **Ovládání teploty** - velká, přehledná tlačítka pro přidání/odebrání teploty
-- 📊 **Historický graf teploty** - zobrazuje změny za posledních 12 hodin
-- 🎯 **Snadná konfigurace** - vizuální editor s výběrem climate entit
-- 📱 **Plně responzivní** - funguje skvěle na mobilech i tabletech
-- ✨ **Plynulé animace** - moderní UX s CSS transitions
-- 🌈 **Barevné stavy** - různé barvy pro heating, cooling, idle
-- 🔄 **Automatické aktualizace** - real-time zobrazení aktuální teploty
+**🎨 Design 2025**
+- **Glassmorphism** - frosted glass efekt s blur a průhledností
+- **Cirkulární ovládání** - Nest-inspirovaný ring s animovaným progressem
+- **Neumorphic tlačítka** - 3D soft shadows pro moderní dotek
+- **Ambient pozadí** - jemné barevné pozadí mění se podle stavu
+
+**🌡️ Ovládání**
+- **Velký cirkulární displej** - teplota zobrazená jako u Google Nest
+- **Intuitivní tlačítka +/-** - rychlá změna teploty
+- **Visual progress ring** - ukazuje aktuální teplotu v rozsahu
+- **Haptic feedback** - vibrační odezva na mobilech
+
+**📊 Pokročilé funkce**
+- **Historický graf** - Chart.js graf s 12h historií (konfigurovatelné)
+- **Real-time aktualizace** - okamžitá reakce na změny
+- **Status indikátor** - animovaná ikona stavu (topení/chlazení/idle)
+- **Plně responzivní** - perfektní na mobilu i desktopu
 
 ## 📦 Instalace
 
@@ -79,24 +89,50 @@ step: 0.5
 ## 📸 Screenshot
 
 Karta zobrazuje:
-- Aktuální teplotu velkým písmem
-- Cílovou teplotu
-- Aktuální stav (topení/chlazení/idle)
-- Tlačítka + a - pro změnu teploty
-- Graf s historií teploty za posledních 12 hodin
-- Barevné gradienty podle stavu
+- **Cirkulární displej** - velké číslo teploty uprostřed kruhu
+- **Animovaný progress ring** - vizuální indikace aktuální teploty
+- **Cílová teplota** - zobrazená pod hlavní teplotou
+- **Status chip** - animovaná ikona stavu (topení/chlazení/idle)
+- **Neumorphic tlačítka +/-** - pro změnu teploty s 3D efektem
+- **Glassmorphic card** - frosted glass efekt s průhledností
+- **Ambient pozadí** - tmavé pozadí mění barvu podle stavu
+- **Moderní graf** - Chart.js s 12h historií (pokud zapnuto)
 
-## 🎨 Design
+## 🎨 Design podle TOP trendů 2025
 
-Karta používá moderní design s:
-- **Gradientními pozadími**: Každý stav má svůj barevný gradient
-  - 🔥 Heating: Oranžovo-červený gradient
-  - ❄️ Cooling: Modro-azurový gradient
-  - 💤 Idle: Zeleno-šedý gradient
-- **Plynulými animacemi**: Všechny změny jsou animované
-- **Material Design ikony**: Moderní vzhled
-- **Skleněný efekt**: Průhlednost a backdrop blur
-- **Responzivní layout**: Přizpůsobí se velikosti obrazovky
+Karta je navržená podle nejnovějších UI/UX trendů:
+
+**Glassmorphism**
+- Frosted glass efekt s `backdrop-filter: blur(40px)`
+- Průhledné vrstvy s jemnými okraji
+- Gradient overlay pro hloubku
+- Semi-transparent borders
+
+**Neumorphism**
+- Soft 3D shadows na tlačítkách
+- Subtle elevation changes při interakci
+- Smooth transitions s cubic-bezier
+- Glow effects při hover
+
+**Ambient Backgrounds**
+- Tmavé pozadí mění barvu podle stavu
+  - 🔥 Heating: Teplé červené tóny `#1a0e0e`
+  - ❄️ Cooling: Chladné modré tóny `#0a1520`
+  - ✓ Idle: Zelené tóny `#0f1419`
+  - ○ Off: Neutrální šedá `#0d0d0d`
+
+**Cirkulární kontrola (Nest-inspired)**
+- 260px SVG progress ring s animací
+- Velké čitelné číslo uprostřed (72px Inter font)
+- Visual feedback aktuální teploty
+- Smooth color transitions s drop-shadow
+
+**Micro-interactions**
+- Floating animation na status ikonách (3s loop)
+- Ambient pulse efekt na pozadí (6s)
+- Button hover states s glow efektem
+- Haptic feedback na mobilech (10ms vibrace)
+- Progress ring animace (0.6s cubic-bezier)
 
 ## 🛠️ Kompatibilita
 

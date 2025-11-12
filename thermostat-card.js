@@ -1,8 +1,15 @@
 /**
  * Thermostat Control Card
- * Moderní karta pro ovládání termostatů v Home Assistant
+ * Moderní glassmorphic karta pro ovládání termostatů v Home Assistant
  *
- * @version 1.0.0
+ * Design Trends 2025:
+ * - Glassmorphism (frosted glass effect)
+ * - Circular control (Nest-inspired)
+ * - Neumorphic elements
+ * - Ambient backgrounds
+ * - Micro-interactions
+ *
+ * @version 2.0.0
  * @author Claude
  */
 
@@ -123,7 +130,7 @@ class ThermostatCard extends HTMLElement {
     const state = entity ? entity.state : 'off';
     const colors = this.getStateColors(state);
 
-    // Vytvoř nový graf
+    // Vytvoř nový graf s moderním stylem
     this._chartInstance = new Chart(ctx, {
       type: 'line',
       data: {
@@ -133,30 +140,30 @@ class ThermostatCard extends HTMLElement {
         })),
         datasets: [
           {
-            label: 'Aktuální teplota',
+            label: 'Aktuální',
             data: history.map(d => d.temperature),
             borderColor: colors.primary,
-            backgroundColor: colors.primaryAlpha,
+            backgroundColor: colors.gradient,
             borderWidth: 3,
             fill: true,
             tension: 0.4,
             pointRadius: 0,
-            pointHoverRadius: 6,
+            pointHoverRadius: 8,
             pointHoverBackgroundColor: colors.primary,
             pointHoverBorderColor: '#fff',
-            pointHoverBorderWidth: 2
+            pointHoverBorderWidth: 3
           },
           {
-            label: 'Cílová teplota',
+            label: 'Cíl',
             data: history.map(d => d.target),
-            borderColor: colors.secondary,
+            borderColor: 'rgba(255, 255, 255, 0.5)',
             backgroundColor: 'transparent',
             borderWidth: 2,
-            borderDash: [5, 5],
+            borderDash: [8, 4],
             fill: false,
             tension: 0.4,
             pointRadius: 0,
-            pointHoverRadius: 5
+            pointHoverRadius: 6
           }
         ]
       },
@@ -172,24 +179,36 @@ class ThermostatCard extends HTMLElement {
             display: true,
             position: 'bottom',
             labels: {
-              color: '#ffffff',
+              color: 'rgba(255, 255, 255, 0.9)',
               font: {
-                size: 12,
-                family: "'Roboto', sans-serif"
+                size: 11,
+                family: "'Inter', 'Roboto', sans-serif",
+                weight: '500'
               },
-              padding: 15,
+              padding: 12,
               usePointStyle: true,
-              pointStyle: 'circle'
+              pointStyle: 'circle',
+              boxWidth: 6,
+              boxHeight: 6
             }
           },
           tooltip: {
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            enabled: true,
+            backgroundColor: 'rgba(0, 0, 0, 0.85)',
             titleColor: '#ffffff',
             bodyColor: '#ffffff',
             borderColor: colors.primary,
-            borderWidth: 1,
-            padding: 12,
+            borderWidth: 2,
+            padding: 16,
             displayColors: true,
+            cornerRadius: 12,
+            titleFont: {
+              size: 13,
+              weight: '600'
+            },
+            bodyFont: {
+              size: 12
+            },
             callbacks: {
               label: function(context) {
                 return context.dataset.label + ': ' + context.parsed.y.toFixed(1) + '°C';
@@ -200,24 +219,34 @@ class ThermostatCard extends HTMLElement {
         scales: {
           x: {
             grid: {
-              color: 'rgba(255, 255, 255, 0.1)',
-              drawBorder: false
+              color: 'rgba(255, 255, 255, 0.08)',
+              drawBorder: false,
+              lineWidth: 1
             },
             ticks: {
-              color: 'rgba(255, 255, 255, 0.7)',
+              color: 'rgba(255, 255, 255, 0.6)',
               maxRotation: 0,
-              autoSkipPadding: 20
+              autoSkipPadding: 20,
+              font: {
+                size: 10,
+                family: "'Inter', 'Roboto', sans-serif"
+              }
             }
           },
           y: {
             grid: {
-              color: 'rgba(255, 255, 255, 0.1)',
-              drawBorder: false
+              color: 'rgba(255, 255, 255, 0.08)',
+              drawBorder: false,
+              lineWidth: 1
             },
             ticks: {
-              color: 'rgba(255, 255, 255, 0.7)',
+              color: 'rgba(255, 255, 255, 0.6)',
+              font: {
+                size: 10,
+                family: "'Inter', 'Roboto', sans-serif"
+              },
               callback: function(value) {
-                return value + '°C';
+                return value + '°';
               }
             }
           }
@@ -227,37 +256,45 @@ class ThermostatCard extends HTMLElement {
   }
 
   /**
-   * Získá barvy podle stavu
+   * Získá barvy podle stavu - Ambient style 2025
    */
   getStateColors(state) {
     const colorSchemes = {
       heating: {
-        gradient: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 50%, #c44569 100%)',
+        ambient: '#1a0e0e',
+        gradient: 'linear-gradient(180deg, rgba(255,90,90,0.15) 0%, rgba(255,60,60,0.05) 100%)',
         primary: '#ff6b6b',
-        primaryAlpha: 'rgba(255, 107, 107, 0.2)',
-        secondary: '#ffd93d',
-        icon: '🔥'
+        primaryRgb: '255, 107, 107',
+        glow: '#ff4444',
+        icon: '🔥',
+        label: 'Topení'
       },
       cooling: {
-        gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+        ambient: '#0a1520',
+        gradient: 'linear-gradient(180deg, rgba(79,172,254,0.15) 0%, rgba(79,172,254,0.05) 100%)',
         primary: '#4facfe',
-        primaryAlpha: 'rgba(79, 172, 254, 0.2)',
-        secondary: '#a8e6ff',
-        icon: '❄️'
+        primaryRgb: '79, 172, 254',
+        glow: '#00d4ff',
+        icon: '❄️',
+        label: 'Chlazení'
       },
       idle: {
-        gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        primary: '#667eea',
-        primaryAlpha: 'rgba(102, 126, 234, 0.2)',
-        secondary: '#a8b5ff',
-        icon: '💤'
+        ambient: '#0f1419',
+        gradient: 'linear-gradient(180deg, rgba(139,195,74,0.15) 0%, rgba(139,195,74,0.05) 100%)',
+        primary: '#8bc34a',
+        primaryRgb: '139, 195, 74',
+        glow: '#9ccc65',
+        icon: '✓',
+        label: 'Připraveno'
       },
       off: {
-        gradient: 'linear-gradient(135deg, #868f96 0%, #596164 100%)',
-        primary: '#868f96',
-        primaryAlpha: 'rgba(134, 143, 150, 0.2)',
-        secondary: '#b8c6db',
-        icon: '⏸️'
+        ambient: '#0d0d0d',
+        gradient: 'linear-gradient(180deg, rgba(158,158,158,0.1) 0%, rgba(158,158,158,0.03) 100%)',
+        primary: '#9e9e9e',
+        primaryRgb: '158, 158, 158',
+        glow: '#757575',
+        icon: '○',
+        label: 'Vypnuto'
       }
     };
 
@@ -291,6 +328,21 @@ class ThermostatCard extends HTMLElement {
       entity_id: this._config.entity,
       temperature: clampedTemp
     });
+
+    // Haptic feedback pro mobil
+    if (navigator.vibrate) {
+      navigator.vibrate(10);
+    }
+  }
+
+  /**
+   * Vypočítá progress pro cirkulární ring (0-100%)
+   */
+  calculateProgress(current, min, max) {
+    if (current === null || current === undefined) return 0;
+    const range = max - min;
+    const value = Math.max(min, Math.min(max, current)) - min;
+    return (value / range) * 100;
   }
 
   /**
@@ -302,60 +354,92 @@ class ThermostatCard extends HTMLElement {
     const entity = this.getEntityState();
     if (!entity) {
       this.shadowRoot.innerHTML = `
-        <ha-card>
-          <div style="padding: 16px; color: red;">
-            Entita "${this._config.entity}" nebyla nalezena!
-          </div>
-        </ha-card>
+        <div style="padding: 24px; color: #ff6b6b; font-family: 'Inter', sans-serif; background: #1a1a1a; border-radius: 24px;">
+          <strong>⚠️ Entita nenalezena</strong><br>
+          <span style="opacity: 0.7; font-size: 14px;">"${this._config.entity}"</span>
+        </div>
       `;
       return;
     }
 
     const currentTemp = entity.attributes.current_temperature;
     const targetTemp = entity.attributes.temperature;
+    const minTemp = entity.attributes.min_temp || 5;
+    const maxTemp = entity.attributes.max_temp || 35;
     const state = entity.state;
     const name = this._config.name || entity.attributes.friendly_name || 'Termostat';
     const colors = this.getStateColors(state);
 
-    const stateText = {
-      heating: 'Topení',
-      cooling: 'Chlazení',
-      idle: 'Nečinný',
-      off: 'Vypnuto'
-    }[state] || state;
+    // Vypočítej progress pro ring
+    const progress = this.calculateProgress(currentTemp, minTemp, maxTemp);
+    const circumference = 2 * Math.PI * 110; // radius 110
+    const strokeOffset = circumference - (progress / 100) * circumference;
 
     this.shadowRoot.innerHTML = `
       <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
         :host {
           display: block;
+          font-family: 'Inter', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
-        .card-container {
-          background: ${colors.gradient};
-          border-radius: 24px;
-          padding: 24px;
-          color: white;
-          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-          backdrop-filter: blur(10px);
+        * {
+          box-sizing: border-box;
+          margin: 0;
+          padding: 0;
+        }
+
+        /* Ambient Background Container */
+        .ambient-bg {
+          background: ${colors.ambient};
+          border-radius: 28px;
+          padding: 3px;
           position: relative;
           overflow: hidden;
-          transition: all 0.3s ease;
+          transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .card-container::before {
+        /* Glassmorphic Card */
+        .glass-card {
+          background: linear-gradient(135deg,
+            rgba(255, 255, 255, 0.12) 0%,
+            rgba(255, 255, 255, 0.06) 100%
+          );
+          backdrop-filter: blur(40px) saturate(180%);
+          -webkit-backdrop-filter: blur(40px) saturate(180%);
+          border-radius: 26px;
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          padding: 32px 28px;
+          position: relative;
+          overflow: hidden;
+          box-shadow:
+            0 8px 32px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        /* Ambient glow */
+        .glass-card::before {
           content: '';
           position: absolute;
           top: -50%;
-          right: -50%;
+          left: -50%;
           width: 200%;
           height: 200%;
-          background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-          animation: pulse 4s ease-in-out infinite;
+          background: ${colors.gradient};
+          animation: ambientPulse 6s ease-in-out infinite;
+          pointer-events: none;
         }
 
-        @keyframes pulse {
-          0%, 100% { transform: scale(1); opacity: 0.5; }
-          50% { transform: scale(1.1); opacity: 0.3; }
+        @keyframes ambientPulse {
+          0%, 100% {
+            transform: translate(0, 0) scale(1);
+            opacity: 0.6;
+          }
+          50% {
+            transform: translate(-10px, -10px) scale(1.1);
+            opacity: 0.8;
+          }
         }
 
         .card-content {
@@ -363,201 +447,311 @@ class ThermostatCard extends HTMLElement {
           z-index: 1;
         }
 
+        /* Header */
         .header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 20px;
+          margin-bottom: 28px;
         }
 
         .name {
-          font-size: 24px;
-          font-weight: 600;
-          font-family: 'Roboto', sans-serif;
-          letter-spacing: -0.5px;
+          font-size: 18px;
+          font-weight: 700;
+          color: rgba(255, 255, 255, 0.95);
+          letter-spacing: -0.3px;
         }
 
-        .state-badge {
-          display: flex;
+        .status-chip {
+          display: inline-flex;
           align-items: center;
-          gap: 8px;
-          background: rgba(255, 255, 255, 0.2);
-          padding: 8px 16px;
-          border-radius: 20px;
-          font-size: 14px;
-          font-weight: 500;
+          gap: 6px;
+          padding: 6px 14px;
+          background: rgba(255, 255, 255, 0.12);
           backdrop-filter: blur(10px);
+          border-radius: 20px;
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          font-size: 12px;
+          font-weight: 600;
+          color: rgba(255, 255, 255, 0.9);
+          letter-spacing: 0.3px;
+          text-transform: uppercase;
         }
 
-        .temperature-display {
+        .status-icon {
+          font-size: 14px;
+          filter: drop-shadow(0 0 8px ${colors.glow});
+        }
+
+        /* Circular Thermostat Control - Nest Inspired */
+        .circular-control {
           display: flex;
           justify-content: center;
           align-items: center;
-          gap: 40px;
-          margin: 30px 0;
+          margin: 36px 0;
+          position: relative;
+        }
+
+        .circle-container {
+          position: relative;
+          width: 260px;
+          height: 260px;
+        }
+
+        /* SVG Circle */
+        .progress-ring {
+          transform: rotate(-90deg);
+          filter: drop-shadow(0 0 20px rgba(${colors.primaryRgb}, 0.5));
+        }
+
+        .progress-ring-bg {
+          fill: none;
+          stroke: rgba(255, 255, 255, 0.08);
+          stroke-width: 8;
+        }
+
+        .progress-ring-fill {
+          fill: none;
+          stroke: ${colors.primary};
+          stroke-width: 8;
+          stroke-linecap: round;
+          stroke-dasharray: ${circumference};
+          stroke-dashoffset: ${strokeOffset};
+          transition: stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+          filter: drop-shadow(0 0 12px ${colors.glow});
+        }
+
+        /* Temperature Display - Center of Circle */
+        .temp-display {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          text-align: center;
         }
 
         .current-temp {
-          text-align: center;
-        }
-
-        .current-temp-label {
-          font-size: 14px;
-          opacity: 0.9;
-          margin-bottom: 8px;
-          text-transform: uppercase;
-          letter-spacing: 1px;
-          font-weight: 500;
-        }
-
-        .current-temp-value {
           font-size: 72px;
-          font-weight: 700;
+          font-weight: 800;
+          color: rgba(255, 255, 255, 0.98);
           line-height: 1;
-          font-family: 'Roboto', sans-serif;
-          text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+          letter-spacing: -3px;
+          text-shadow: 0 4px 24px rgba(${colors.primaryRgb}, 0.4);
+          margin-bottom: 8px;
         }
 
         .temp-unit {
-          font-size: 32px;
-          opacity: 0.8;
-        }
-
-        .target-temp {
-          text-align: center;
-          opacity: 0.9;
-        }
-
-        .target-temp-label {
-          font-size: 12px;
-          margin-bottom: 6px;
-          text-transform: uppercase;
-          letter-spacing: 1px;
-          font-weight: 500;
-        }
-
-        .target-temp-value {
-          font-size: 36px;
+          font-size: 28px;
           font-weight: 600;
-          font-family: 'Roboto', sans-serif;
+          opacity: 0.5;
+          margin-left: 2px;
         }
 
-        .controls {
-          display: flex;
-          justify-content: center;
-          gap: 20px;
-          margin: 30px 0;
-        }
-
-        .temp-button {
-          background: rgba(255, 255, 255, 0.25);
-          border: 2px solid rgba(255, 255, 255, 0.4);
-          color: white;
-          width: 64px;
-          height: 64px;
-          border-radius: 50%;
-          font-size: 32px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.3s ease;
+        .target-display {
           display: flex;
           align-items: center;
           justify-content: center;
+          gap: 8px;
+          margin-top: 12px;
+          font-size: 14px;
+          color: rgba(255, 255, 255, 0.6);
+          font-weight: 500;
+        }
+
+        .target-value {
+          color: rgba(255, 255, 255, 0.85);
+          font-weight: 700;
+          font-size: 16px;
+        }
+
+        .arrow-icon {
+          font-size: 12px;
+          opacity: 0.5;
+        }
+
+        /* Neumorphic Control Buttons */
+        .controls {
+          display: flex;
+          justify-content: center;
+          gap: 24px;
+          margin: 32px 0 24px 0;
+        }
+
+        .neuro-button {
+          position: relative;
+          width: 68px;
+          height: 68px;
+          border-radius: 50%;
+          background: linear-gradient(145deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05));
+          border: 1px solid rgba(255, 255, 255, 0.18);
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 28px;
+          font-weight: 600;
+          color: rgba(255, 255, 255, 0.9);
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow:
+            0 6px 20px rgba(0, 0, 0, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
           backdrop-filter: blur(10px);
-          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+          user-select: none;
+          -webkit-tap-highlight-color: transparent;
         }
 
-        .temp-button:hover {
-          background: rgba(255, 255, 255, 0.35);
-          transform: scale(1.1);
-          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        .neuro-button:hover {
+          background: linear-gradient(145deg, rgba(255,255,255,0.22), rgba(255,255,255,0.12));
+          transform: translateY(-2px);
+          box-shadow:
+            0 8px 24px rgba(0, 0, 0, 0.35),
+            inset 0 1px 0 rgba(255, 255, 255, 0.25),
+            0 0 20px rgba(${colors.primaryRgb}, 0.3);
         }
 
-        .temp-button:active {
-          transform: scale(0.95);
+        .neuro-button:active {
+          transform: translateY(0px) scale(0.96);
+          box-shadow:
+            0 4px 12px rgba(0, 0, 0, 0.3),
+            inset 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
-        .graph-container {
-          margin-top: 30px;
-          background: rgba(0, 0, 0, 0.2);
-          border-radius: 16px;
-          padding: 20px;
-          backdrop-filter: blur(10px);
+        .button-icon {
+          font-size: 32px;
+          line-height: 1;
+          text-shadow: 0 2px 8px rgba(${colors.primaryRgb}, 0.4);
+        }
+
+        /* Graph Section */
+        .graph-section {
+          margin-top: 36px;
+          background: rgba(0, 0, 0, 0.25);
+          border-radius: 20px;
+          padding: 24px 20px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          backdrop-filter: blur(20px);
+        }
+
+        .graph-header {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          margin-bottom: 20px;
         }
 
         .graph-title {
-          font-size: 16px;
+          font-size: 13px;
           font-weight: 600;
-          margin-bottom: 15px;
-          text-align: center;
-          opacity: 0.9;
+          color: rgba(255, 255, 255, 0.7);
+          letter-spacing: 0.5px;
+          text-transform: uppercase;
+        }
+
+        .graph-icon {
+          font-size: 16px;
+          opacity: 0.6;
         }
 
         #temperatureChart {
-          max-height: 200px;
+          max-height: 180px;
         }
 
-        .no-graph {
-          text-align: center;
-          padding: 40px 20px;
-          opacity: 0.7;
-          font-size: 14px;
-        }
-
+        /* Responsive */
         @media (max-width: 600px) {
-          .card-container {
-            padding: 20px;
+          .glass-card {
+            padding: 24px 20px;
           }
 
-          .temperature-display {
-            flex-direction: column;
-            gap: 20px;
+          .circle-container {
+            width: 220px;
+            height: 220px;
           }
 
-          .current-temp-value {
-            font-size: 64px;
+          .current-temp {
+            font-size: 56px;
           }
+
+          .neuro-button {
+            width: 60px;
+            height: 60px;
+          }
+
+          .button-icon {
+            font-size: 28px;
+          }
+        }
+
+        /* Subtle animations */
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-4px); }
+        }
+
+        .status-icon {
+          animation: float 3s ease-in-out infinite;
         }
       </style>
 
-      <div class="card-container">
-        <div class="card-content">
-          <div class="header">
-            <div class="name">${name}</div>
-            <div class="state-badge">
-              <span>${colors.icon}</span>
-              <span>${stateText}</span>
-            </div>
-          </div>
-
-          <div class="temperature-display">
-            <div class="current-temp">
-              <div class="current-temp-label">Aktuální teplota</div>
-              <div class="current-temp-value">
-                ${currentTemp !== null ? currentTemp.toFixed(1) : '--'}
-                <span class="temp-unit">°C</span>
+      <div class="ambient-bg">
+        <div class="glass-card">
+          <div class="card-content">
+            <!-- Header -->
+            <div class="header">
+              <div class="name">${name}</div>
+              <div class="status-chip">
+                <span class="status-icon">${colors.icon}</span>
+                <span>${colors.label}</span>
               </div>
             </div>
 
-            <div class="target-temp">
-              <div class="target-temp-label">Cílová teplota</div>
-              <div class="target-temp-value">
-                ${targetTemp !== null ? targetTemp.toFixed(1) : '--'}°C
+            <!-- Circular Control -->
+            <div class="circular-control">
+              <div class="circle-container">
+                <!-- SVG Progress Ring -->
+                <svg class="progress-ring" width="260" height="260">
+                  <!-- Background circle -->
+                  <circle class="progress-ring-bg" cx="130" cy="130" r="110"/>
+                  <!-- Progress circle -->
+                  <circle class="progress-ring-fill" cx="130" cy="130" r="110"/>
+                </svg>
+
+                <!-- Temperature Display -->
+                <div class="temp-display">
+                  <div class="current-temp">
+                    ${currentTemp !== null ? currentTemp.toFixed(1) : '--'}
+                    <span class="temp-unit">°</span>
+                  </div>
+                  <div class="target-display">
+                    <span>Cíl</span>
+                    <span class="arrow-icon">→</span>
+                    <span class="target-value">${targetTemp !== null ? targetTemp.toFixed(1) : '--'}°</span>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div class="controls">
-            <button class="temp-button" id="decreaseTemp">−</button>
-            <button class="temp-button" id="increaseTemp">+</button>
-          </div>
-
-          ${this._config.show_graph ? `
-            <div class="graph-container">
-              <div class="graph-title">📊 Historie teploty (${this._config.graph_hours}h)</div>
-              <canvas id="temperatureChart"></canvas>
+            <!-- Neumorphic Controls -->
+            <div class="controls">
+              <button class="neuro-button" id="decreaseTemp" title="Snížit teplotu">
+                <span class="button-icon">−</span>
+              </button>
+              <button class="neuro-button" id="increaseTemp" title="Zvýšit teplotu">
+                <span class="button-icon">+</span>
+              </button>
             </div>
-          ` : ''}
+
+            <!-- Graph Section -->
+            ${this._config.show_graph ? `
+              <div class="graph-section">
+                <div class="graph-header">
+                  <span class="graph-icon">📈</span>
+                  <span class="graph-title">Historie ${this._config.graph_hours}h</span>
+                </div>
+                <canvas id="temperatureChart"></canvas>
+              </div>
+            ` : ''}
+          </div>
         </div>
       </div>
     `;
@@ -579,7 +773,7 @@ class ThermostatCard extends HTMLElement {
    * Vrátí velikost karty (pro layout)
    */
   getCardSize() {
-    return this._config.show_graph ? 6 : 4;
+    return this._config.show_graph ? 7 : 5;
   }
 
   /**
@@ -789,13 +983,13 @@ window.customCards = window.customCards || [];
 window.customCards.push({
   type: 'thermostat-card',
   name: 'Thermostat Control Card',
-  description: 'Moderní karta pro ovládání termostatů s grafem a barevným designem',
+  description: '🔥 Moderní glassmorphic karta s cirkulárním ovládáním inspirovaným designem 2025',
   preview: true,
   documentationURL: 'https://github.com/yourusername/thermostat-card'
 });
 
 console.info(
-  '%c THERMOSTAT-CARD %c v1.0.0 ',
-  'color: white; background: #ff6b6b; font-weight: 700;',
-  'color: #ff6b6b; background: white; font-weight: 700;'
+  '%c THERMOSTAT-CARD %c v2.0.0 ',
+  'color: white; background: linear-gradient(90deg, #ff6b6b, #4facfe); font-weight: 700; padding: 4px 8px; border-radius: 4px 0 0 4px;',
+  'color: #4facfe; background: white; font-weight: 700; padding: 4px 8px; border-radius: 0 4px 4px 0;'
 );

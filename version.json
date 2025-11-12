@@ -1,5 +1,6 @@
 {
-  "version": "1.0.0",
+  "version": "2.0.0",
   "release_date": "2025-11-12",
-  "min_ha_version": "2024.1.0"
+  "min_ha_version": "2024.1.0",
+  "design_trends": ["glassmorphism", "neumorphism", "ambient_ui", "circular_controls"]
 }
