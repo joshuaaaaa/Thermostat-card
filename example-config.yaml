@@ -1,0 +1,63 @@
+# Příklady konfigurace pro Thermostat Control Card
+
+# Základní konfigurace
+- type: custom:thermostat-card
+  entity: climate.living_room
+
+# S vlastním názvem
+- type: custom:thermostat-card
+  entity: climate.bedroom
+  name: Ložnice
+
+# Bez grafu
+- type: custom:thermostat-card
+  entity: climate.bathroom
+  name: Koupelna
+  show_graph: false
+
+# S delší historií (24 hodin)
+- type: custom:thermostat-card
+  entity: climate.office
+  name: Pracovna
+  graph_hours: 24
+
+# S vlastním krokem teploty
+- type: custom:thermostat-card
+  entity: climate.garage
+  name: Garáž
+  step: 1.0
+
+# Plná konfigurace
+- type: custom:thermostat-card
+  entity: climate.kitchen
+  name: Kuchyně
+  show_graph: true
+  graph_hours: 12
+  step: 0.5
+
+# Více karet vedle sebe v horizontal-stack
+- type: horizontal-stack
+  cards:
+    - type: custom:thermostat-card
+      entity: climate.living_room
+      name: Obývák
+
+    - type: custom:thermostat-card
+      entity: climate.bedroom
+      name: Ložnice
+
+# V grid layoutu
+- type: grid
+  columns: 2
+  cards:
+    - type: custom:thermostat-card
+      entity: climate.room1
+
+    - type: custom:thermostat-card
+      entity: climate.room2
+
+    - type: custom:thermostat-card
+      entity: climate.room3
+
+    - type: custom:thermostat-card
+      entity: climate.room4
