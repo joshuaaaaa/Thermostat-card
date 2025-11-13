@@ -662,27 +662,51 @@ class ThermostatCard extends HTMLElement {
   }
 
   setupFlipDisplay() {
-    const flipCard = this.shadowRoot.getElementById('flipDisplay');
-    if (!flipCard || !this._hass) return;
+    if (!this._config.flip_entity || !this._hass) return;
 
-    // Nastavení flip display card s entitou
-    const flipEntity = this._hass.states[this._config.flip_entity];
-    if (!flipEntity) return;
+    // Počkej na inicializaci flip display elementu
+    requestAnimationFrame(() => {
+      const flipCard = this.shadowRoot.getElementById('flipDisplay');
+      if (!flipCard) return;
 
-    // Nastavení config pro flip display
-    flipCard.setConfig({
-      entity: this._config.flip_entity,
-      digits: 2,
-      hide_background: true
+      // Ověř, že entita existuje
+      const flipEntity = this._hass.states[this._config.flip_entity];
+      if (!flipEntity) {
+        console.warn(`Flip display entita nenalezena: ${this._config.flip_entity}`);
+        return;
+      }
+
+      // Zkontroluj, že flip card má metodu setConfig
+      if (typeof flipCard.setConfig !== 'function') {
+        console.warn('Flip display card není načtená nebo nepodporuje setConfig');
+        return;
+      }
+
+      try {
+        // Nastavení config pro flip display
+        flipCard.setConfig({
+          entity: this._config.flip_entity,
+          digits: 2,
+          hide_background: true
+        });
+
+        flipCard.hass = this._hass;
+      } catch (error) {
+        console.error('Chyba při nastavení flip display:', error);
+      }
     });
-
-    flipCard.hass = this._hass;
   }
 
   updateFlipDisplay() {
+    if (!this._config.flip_entity || !this._hass) return;
+
     const flipCard = this.shadowRoot.getElementById('flipDisplay');
-    if (flipCard && this._hass && this._config.flip_entity) {
-      flipCard.hass = this._hass;
+    if (flipCard && typeof flipCard.hass !== 'undefined') {
+      try {
+        flipCard.hass = this._hass;
+      } catch (error) {
+        console.error('Chyba při aktualizaci flip display:', error);
+      }
     }
   }
 
