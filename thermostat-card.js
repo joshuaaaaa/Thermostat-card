@@ -33,7 +33,12 @@ class ThermostatCard extends HTMLElement {
       ...config
     };
 
+    // Reset při změně konfigurace
     this._rendered = false;
+    if (this._chartInstance) {
+      this._chartInstance.destroy();
+      this._chartInstance = null;
+    }
     this.render();
   }
 
@@ -100,15 +105,27 @@ class ThermostatCard extends HTMLElement {
     const history = await this.getHistory();
     if (history.length === 0) return;
 
-    const ctx = canvas.getContext('2d');
-
-    if (this._chartInstance) {
-      this._chartInstance.destroy();
-    }
-
     const entity = this._hass.states[this._config.entity];
     const state = entity ? entity.state : 'off';
     const colors = this.getStateColors(state);
+
+    // Pokud graf už existuje, pouze updateuj data (prevence blikání)
+    if (this._chartInstance) {
+      this._chartInstance.data.labels = history.map(d => d.time.toLocaleTimeString('cs-CZ', {
+        hour: '2-digit',
+        minute: '2-digit'
+      }));
+      this._chartInstance.data.datasets[0].data = history.map(d => d.temperature);
+      this._chartInstance.data.datasets[0].borderColor = colors.primary;
+      this._chartInstance.data.datasets[0].backgroundColor = colors.gradient;
+      this._chartInstance.data.datasets[1].data = history.map(d => d.target);
+      this._chartInstance.options.plugins.tooltip.borderColor = colors.primary;
+      this._chartInstance.update('none'); // 'none' = bez animace pro okamžitý update
+      return;
+    }
+
+    // První vytvoření grafu
+    const ctx = canvas.getContext('2d');
 
     this._chartInstance = new Chart(ctx, {
       type: 'line',
@@ -149,6 +166,7 @@ class ThermostatCard extends HTMLElement {
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        animation: false, // Vypni animace pro rychlejší render
         interaction: {
           intersect: false,
           mode: 'index'
