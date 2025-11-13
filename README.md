@@ -189,3 +189,5 @@ Inspirováno Google Nest termostatem a komunitou Home Assistant.
 ---
 
 **v2.1.0** - Kompletní redesign pro lepší použitelnost na dashboardech 🎨
+
+*Poslední aktualizace: Listopad 2025*
