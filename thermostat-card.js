@@ -977,4 +977,8 @@ window.customCards.push({
   preview: true
 });
 
-console.info('%c THERMOSTAT-CARD %c v2.1.0 ', 'color: white; background: #10b981; font-weight: 700;', 'color: #10b981; background: white; font-weight: 700;');
+console.info(
+  '%c THERMOSTAT-CARD %c v2.1.0 ',
+  'color: white; background: #10b981; font-weight: 700;',
+  'color: #10b981; background: white; font-weight: 700;'
+);
