@@ -35,6 +35,11 @@ class ThermostatCard extends HTMLElement {
       flip_number_of_cards: config.flip_number_of_cards !== undefined ? config.flip_number_of_cards : 2,
       flip_hide_background: config.flip_hide_background !== false,
       flip_font_size: config.flip_font_size || '3em',
+      custom_colors: config.custom_colors !== undefined ? config.custom_colors : false,
+      color_heating: config.color_heating || '#ff6b6b',
+      color_cooling: config.color_cooling || '#4facfe',
+      color_idle: config.color_idle || '#10b981',
+      color_off: config.color_off || '#6b7280',
       ...config
     };
 
@@ -87,12 +92,13 @@ class ThermostatCard extends HTMLElement {
 
       if (history && history[0]) {
         return history[0]
-          .filter(state => state.attributes && state.attributes.current_temperature !== null)
+          .filter(state => state.attributes && state.attributes.current_temperature !== null && state.attributes.current_temperature !== undefined)
           .map(state => ({
             time: new Date(state.last_changed),
-            temperature: parseFloat(state.attributes.current_temperature),
-            target: parseFloat(state.attributes.temperature)
-          }));
+            temperature: parseFloat(state.attributes.current_temperature) || 0,
+            target: parseFloat(state.attributes.temperature) || parseFloat(state.attributes.current_temperature) || 0
+          }))
+          .filter(item => !isNaN(item.temperature) && item.temperature > 0);
       }
     } catch (error) {
       console.error('Chyba při načítání historie:', error);
@@ -132,6 +138,11 @@ class ThermostatCard extends HTMLElement {
     // První vytvoření grafu
     const ctx = canvas.getContext('2d');
 
+    // Vytvoř barevný gradient pro pozadí
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, colors.gradient);
+    gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
     this._chartInstance = new Chart(ctx, {
       type: 'line',
       data: {
@@ -144,8 +155,8 @@ class ThermostatCard extends HTMLElement {
             label: 'Aktuální',
             data: history.map(d => d.temperature),
             borderColor: colors.primary,
-            backgroundColor: colors.gradient,
-            borderWidth: 2,
+            backgroundColor: gradient,
+            borderWidth: 3,
             fill: true,
             tension: 0.3,
             pointRadius: 0,
@@ -217,39 +228,35 @@ class ThermostatCard extends HTMLElement {
   }
 
   getStateColors(state) {
+    const hexToRgb = (hex) => {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '0, 0, 0';
+    };
+
+    const createColorScheme = (color, icon, label) => {
+      const rgb = hexToRgb(color);
+      return {
+        primary: color,
+        primaryRgb: rgb,
+        gradient: `rgba(${rgb}, 0.15)`,
+        bg: `linear-gradient(135deg, rgba(${rgb}, 0.03) 0%, rgba(${rgb}, 0.08) 100%)`,
+        icon: icon,
+        label: label
+      };
+    };
+
+    const baseColors = {
+      heating: { color: this._config.custom_colors ? this._config.color_heating : '#ff6b6b', icon: '🔥', label: 'Topení' },
+      cooling: { color: this._config.custom_colors ? this._config.color_cooling : '#4facfe', icon: '❄️', label: 'Chlazení' },
+      idle: { color: this._config.custom_colors ? this._config.color_idle : '#10b981', icon: '✓', label: 'Připraveno' },
+      off: { color: this._config.custom_colors ? this._config.color_off : '#6b7280', icon: '○', label: 'Vypnuto' }
+    };
+
     const colorSchemes = {
-      heating: {
-        primary: '#ff6b6b',
-        primaryRgb: '255, 107, 107',
-        gradient: 'rgba(255, 107, 107, 0.15)',
-        bg: 'linear-gradient(135deg, #fff5f5 0%, #ffe8e8 100%)',
-        icon: '🔥',
-        label: 'Topení'
-      },
-      cooling: {
-        primary: '#4facfe',
-        primaryRgb: '79, 172, 254',
-        gradient: 'rgba(79, 172, 254, 0.15)',
-        bg: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)',
-        icon: '❄️',
-        label: 'Chlazení'
-      },
-      idle: {
-        primary: '#10b981',
-        primaryRgb: '16, 185, 129',
-        gradient: 'rgba(16, 185, 129, 0.15)',
-        bg: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
-        icon: '✓',
-        label: 'Připraveno'
-      },
-      off: {
-        primary: '#6b7280',
-        primaryRgb: '107, 116, 128',
-        gradient: 'rgba(107, 116, 128, 0.15)',
-        bg: 'linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%)',
-        icon: '○',
-        label: 'Vypnuto'
-      }
+      heating: createColorScheme(baseColors.heating.color, baseColors.heating.icon, baseColors.heating.label),
+      cooling: createColorScheme(baseColors.cooling.color, baseColors.cooling.icon, baseColors.cooling.label),
+      idle: createColorScheme(baseColors.idle.color, baseColors.idle.icon, baseColors.idle.label),
+      off: createColorScheme(baseColors.off.color, baseColors.off.icon, baseColors.off.label)
     };
 
     return colorSchemes[state] || colorSchemes.off;
@@ -288,7 +295,7 @@ class ThermostatCard extends HTMLElement {
     return (value / range) * 100;
   }
 
-  updateValues(currentTemp, targetTemp, state, name, colors, strokeOffset) {
+  updateValues(currentTemp, targetTemp, state, name, colors, strokeOffset, targetStrokeOffset) {
     const card = this.shadowRoot.querySelector('.thermostat-card');
     if (card) {
       card.style.background = colors.bg;
@@ -318,6 +325,12 @@ class ThermostatCard extends HTMLElement {
     if (progressRing) {
       progressRing.style.stroke = colors.primary;
       progressRing.style.strokeDashoffset = strokeOffset;
+    }
+
+    const targetRing = this.shadowRoot.querySelector('.progress-ring-target');
+    if (targetRing) {
+      targetRing.style.stroke = colors.primary;
+      targetRing.style.strokeDashoffset = targetStrokeOffset;
     }
 
     const buttons = this.shadowRoot.querySelectorAll('.control-btn');
@@ -357,11 +370,13 @@ class ThermostatCard extends HTMLElement {
     const colors = this.getStateColors(state);
 
     const progress = this.calculateProgress(currentTemp, minTemp, maxTemp);
+    const targetProgress = this.calculateProgress(targetTemp, minTemp, maxTemp);
     const circumference = 2 * Math.PI * 65;
     const strokeOffset = circumference - (progress / 100) * circumference;
+    const targetStrokeOffset = circumference - (targetProgress / 100) * circumference;
 
     if (this._rendered) {
-      this.updateValues(currentTemp, targetTemp, state, name, colors, strokeOffset);
+      this.updateValues(currentTemp, targetTemp, state, name, colors, strokeOffset, targetStrokeOffset);
       return;
     }
 
@@ -454,6 +469,18 @@ class ThermostatCard extends HTMLElement {
           stroke-linecap: round;
           stroke-dasharray: ${circumference};
           stroke-dashoffset: ${strokeOffset};
+          transition: stroke 0.4s ease, stroke-dashoffset 0.6s ease;
+        }
+
+        .progress-ring-target {
+          fill: none;
+          stroke: ${colors.primary};
+          stroke-width: 3;
+          stroke-linecap: round;
+          stroke-dasharray: ${circumference};
+          stroke-dashoffset: ${targetStrokeOffset};
+          stroke-dasharray: 8 4;
+          opacity: 0.5;
           transition: stroke 0.4s ease, stroke-dashoffset 0.6s ease;
         }
 
@@ -551,7 +578,7 @@ class ThermostatCard extends HTMLElement {
           background: white;
           border-radius: 12px;
           padding: 12px;
-          height: ${this._config.flip_entity ? '85px' : '120px'};
+          height: ${this._config.flip_entity ? '100px' : '120px'};
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
         }
 
@@ -563,13 +590,18 @@ class ThermostatCard extends HTMLElement {
         .flip-display-container {
           background: white;
           border-radius: 8px;
-          padding: 16px;
+          padding: 8px 12px;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
           display: flex;
           align-items: center;
           justify-content: center;
           margin-top: 8px;
-          min-height: auto;
+          min-height: 45px;
+          overflow: visible;
+        }
+
+        .flip-display-container flip-display-card {
+          transform: scale(0.9);
         }
 
         @media (max-width: 600px) {
@@ -602,6 +634,7 @@ class ThermostatCard extends HTMLElement {
             <div class="circle-container">
               <svg class="progress-ring" width="150" height="150">
                 <circle class="progress-ring-bg" cx="75" cy="75" r="65"/>
+                <circle class="progress-ring-target" cx="75" cy="75" r="65"/>
                 <circle class="progress-ring-fill" cx="75" cy="75" r="65"/>
               </svg>
               <div class="temp-display">
@@ -730,7 +763,12 @@ class ThermostatCard extends HTMLElement {
       flip_digits_per_card: 1,
       flip_number_of_cards: 2,
       flip_hide_background: true,
-      flip_font_size: '3em'
+      flip_font_size: '3em',
+      custom_colors: false,
+      color_heating: '#ff6b6b',
+      color_cooling: '#4facfe',
+      color_idle: '#10b981',
+      color_off: '#6b7280'
     };
   }
 }
@@ -910,6 +948,39 @@ class ThermostatCardEditor extends HTMLElement {
             <label for="flip_hide_background">Skrýt pozadí</label>
           </div>
         </div>
+
+        <div class="section-header">Vlastní Barvy</div>
+
+        <div class="config-row">
+          <div class="checkbox-row">
+            <input type="checkbox" id="custom_colors" ${this._config.custom_colors ? 'checked' : ''}/>
+            <label for="custom_colors">Použít vlastní barvy</label>
+          </div>
+        </div>
+
+        <div class="config-row">
+          <label for="color_heating">Barva topení</label>
+          <input type="color" id="color_heating" value="${this._config.color_heating || '#ff6b6b'}"/>
+          <div class="helper-text">Barva pro režim topení</div>
+        </div>
+
+        <div class="config-row">
+          <label for="color_cooling">Barva chlazení</label>
+          <input type="color" id="color_cooling" value="${this._config.color_cooling || '#4facfe'}"/>
+          <div class="helper-text">Barva pro režim chlazení</div>
+        </div>
+
+        <div class="config-row">
+          <label for="color_idle">Barva připraveno</label>
+          <input type="color" id="color_idle" value="${this._config.color_idle || '#10b981'}"/>
+          <div class="helper-text">Barva když je termostat připravený (idle)</div>
+        </div>
+
+        <div class="config-row">
+          <label for="color_off">Barva vypnuto</label>
+          <input type="color" id="color_off" value="${this._config.color_off || '#6b7280'}"/>
+          <div class="helper-text">Barva když je termostat vypnutý</div>
+        </div>
       </div>
     `;
 
@@ -923,6 +994,11 @@ class ThermostatCardEditor extends HTMLElement {
     const flipNumberOfCardsInput = this.shadowRoot.getElementById('flip_number_of_cards');
     const flipFontSizeInput = this.shadowRoot.getElementById('flip_font_size');
     const flipHideBackgroundCheckbox = this.shadowRoot.getElementById('flip_hide_background');
+    const customColorsCheckbox = this.shadowRoot.getElementById('custom_colors');
+    const colorHeatingInput = this.shadowRoot.getElementById('color_heating');
+    const colorCoolingInput = this.shadowRoot.getElementById('color_cooling');
+    const colorIdleInput = this.shadowRoot.getElementById('color_idle');
+    const colorOffInput = this.shadowRoot.getElementById('color_off');
 
     entitySelect?.addEventListener('change', (e) => {
       this.configChanged({ ...this._config, entity: e.target.value });
@@ -962,6 +1038,45 @@ class ThermostatCardEditor extends HTMLElement {
 
     flipHideBackgroundCheckbox?.addEventListener('change', (e) => {
       this.configChanged({ ...this._config, flip_hide_background: e.target.checked });
+    });
+
+    customColorsCheckbox?.addEventListener('change', (e) => {
+      this.configChanged({ ...this._config, custom_colors: e.target.checked });
+    });
+
+    colorHeatingInput?.addEventListener('input', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.configChanged({ ...this._config, color_heating: e.target.value });
+    });
+
+    colorCoolingInput?.addEventListener('input', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.configChanged({ ...this._config, color_cooling: e.target.value });
+    });
+
+    colorIdleInput?.addEventListener('input', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.configChanged({ ...this._config, color_idle: e.target.value });
+    });
+
+    colorOffInput?.addEventListener('input', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.configChanged({ ...this._config, color_off: e.target.value });
+    });
+
+    // Fix scrollu - zabraň vyskočení při focusu na input
+    const allInputs = this.shadowRoot.querySelectorAll('input, select');
+    allInputs.forEach(input => {
+      input.addEventListener('focus', (e) => {
+        e.preventDefault();
+        setTimeout(() => {
+          input.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+        }, 100);
+      });
     });
   }
 }
