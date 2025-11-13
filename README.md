@@ -1,31 +1,32 @@
 # 🌡️ Thermostat Control Card pro Home Assistant
 
-Ultramoderní glassmorphic karta pro ovládání termostatů s designem inspirovaným TOP trendy 2025.
+Kompaktní a přehledná karta pro ovládání termostatů s designem inspirovaným Google Nest - ideální pro dashboardy.
 
-![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)
+![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)
 ![HACS](https://img.shields.io/badge/HACS-compatible-success.svg)
 ![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2024.1+-blue.svg)
-![Design](https://img.shields.io/badge/Design-2025%20Trends-ff69b4.svg)
+![Design](https://img.shields.io/badge/Design-Nest%20Inspired-orange.svg)
 
 ## ✨ Funkce
 
-**🎨 Design 2025**
-- **Glassmorphism** - frosted glass efekt s blur a průhledností
-- **Cirkulární ovládání** - Nest-inspirovaný ring s animovaným progressem
-- **Neumorphic tlačítka** - 3D soft shadows pro moderní dotek
-- **Ambient pozadí** - jemné barevné pozadí mění se podle stavu
+**🎨 Kompaktní Design**
+- **Nest-inspirovaný layout** - cirkulární progress ring s velkou teplotou
+- **Dashboard-friendly** - kompaktní rozložení ideální pro přehledné dashboardy
+- **Barevné pozadí** - jemné gradienty mění barvu podle stavu (heating/cooling/idle/off)
+- **Status chip** - barevný indikátor stavu s ikonou
 
 **🌡️ Ovládání**
-- **Velký cirkulární displej** - teplota zobrazená jako u Google Nest
-- **Intuitivní tlačítka +/-** - rychlá změna teploty
-- **Visual progress ring** - ukazuje aktuální teplotu v rozsahu
-- **Haptic feedback** - vibrační odezva na mobilech
+- **Cirkulární displej** - velké zobrazení aktuální teploty (150px kruh)
+- **Progress ring** - vizuální indikace teploty v rozsahu min-max
+- **Intuitivní tlačítka +/-** - rychlá změna teploty s haptic feedback
+- **Cílová teplota** - zobrazená pod hlavní teplotou
 
 **📊 Pokročilé funkce**
-- **Historický graf** - Chart.js graf s 12h historií (konfigurovatelné)
+- **Historický graf** - Chart.js graf vedle kruhu (konfigurovatelné 1-48h)
+- **Bez blikání** - optimalizovaná aktualizace grafu bez rerenderu
+- **Flip Display integrace** - volitelné připojení flip-display-card pro zobrazení hodnot
 - **Real-time aktualizace** - okamžitá reakce na změny
-- **Status indikátor** - animovaná ikona stavu (topení/chlazení/idle)
-- **Plně responzivní** - perfektní na mobilu i desktopu
+- **Plně responzivní** - adaptivní layout pro mobil i desktop
 
 ## 📦 Instalace
 
@@ -74,6 +75,7 @@ name: Ložnice
 show_graph: true
 graph_hours: 24
 step: 0.5
+flip_entity: sensor.bedroom_humidity  # volitelné
 ```
 
 ## ⚙️ Konfigurační parametry
@@ -85,67 +87,75 @@ step: 0.5
 | `show_graph` | boolean | `true` | Zobrazit historický graf teploty |
 | `graph_hours` | number | `12` | Počet hodin zobrazených v grafu (1-48) |
 | `step` | number | `0.5` | Krok pro změnu teploty tlačítky |
+| `flip_entity` | string | `''` | Entita pro flip-display-card pod grafem (volitelné) |
 
-## 📸 Screenshot
+## 📸 Vzhled karty
 
 Karta zobrazuje:
-- **Cirkulární displej** - velké číslo teploty uprostřed kruhu
-- **Animovaný progress ring** - vizuální indikace aktuální teploty
+- **Kompaktní layout** - kruh vlevo, graf vpravo
+- **Cirkulární displej** - velké číslo aktuální teploty uprostřed kruhu (150px)
+- **Animovaný progress ring** - vizuální indikace teploty v rozsahu min-max
 - **Cílová teplota** - zobrazená pod hlavní teplotou
-- **Status chip** - animovaná ikona stavu (topení/chlazení/idle)
-- **Neumorphic tlačítka +/-** - pro změnu teploty s 3D efektem
-- **Glassmorphic card** - frosted glass efekt s průhledností
-- **Ambient pozadí** - tmavé pozadí mění barvu podle stavu
-- **Moderní graf** - Chart.js s 12h historií (pokud zapnuto)
+- **Status chip** - barevný indikátor stavu s ikonou (🔥 Topení, ❄️ Chlazení, ✓ Připraveno, ○ Vypnuto)
+- **Ovládací tlačítka +/-** - cirkulární tlačítka pro změnu teploty
+- **Barevné pozadí** - jemný gradient mění se podle stavu
+- **Historický graf** - Chart.js vedle kruhu s hoverable tooltip
+- **Flip Display** - volitelné zobrazení hodnot pod grafem (vyžaduje flip-display-card)
 
-## 🎨 Design podle TOP trendů 2025
+## 🎨 Design Vlastnosti
 
-Karta je navržená podle nejnovějších UI/UX trendů:
+Karta je navržená s důrazem na kompaktnost a přehlednost:
 
-**Glassmorphism**
-- Frosted glass efekt s `backdrop-filter: blur(40px)`
-- Průhledné vrstvy s jemnými okraji
-- Gradient overlay pro hloubku
-- Semi-transparent borders
+**Nest-inspirovaný cirkulární displej**
+- 150px SVG progress ring s plynulou animací
+- Velké čitelné číslo uprostřed (48px font)
+- Barevný ring mění se podle stavu
+- Smooth transitions (0.6s ease)
 
-**Neumorphism**
-- Soft 3D shadows na tlačítkách
-- Subtle elevation changes při interakci
-- Smooth transitions s cubic-bezier
-- Glow effects při hover
+**Barevné schéma podle stavu**
+Karta mění pozadí a barvy podle stavu termostatu:
+- 🔥 **Heating** (Topení): Teplé červené tóny `#ff6b6b` na světle růžovém gradientu
+- ❄️ **Cooling** (Chlazení): Chladné modré tóny `#4facfe` na světle modrém gradientu
+- ✓ **Idle** (Připraveno): Zelené tóny `#10b981` na světle zeleném gradientu
+- ○ **Off** (Vypnuto): Neutrální šedá `#6b7280` na světle šedém gradientu
 
-**Ambient Backgrounds**
-- Tmavé pozadí mění barvu podle stavu
-  - 🔥 Heating: Teplé červené tóny `#1a0e0e`
-  - ❄️ Cooling: Chladné modré tóny `#0a1520`
-  - ✓ Idle: Zelené tóny `#0f1419`
-  - ○ Off: Neutrální šedá `#0d0d0d`
+**Kompaktní layout**
+- Grid rozložení: kruh (180px) vlevo, graf vpravo
+- Responzivní - na mobilu stack vertikálně
+- Bílé pozadí grafů pro lepší čitelnost
+- Optimalizované pro dashboardy
 
-**Cirkulární kontrola (Nest-inspired)**
-- 260px SVG progress ring s animací
-- Velké čitelné číslo uprostřed (72px Inter font)
-- Visual feedback aktuální teploty
-- Smooth color transitions s drop-shadow
+**Optimalizace výkonu**
+- Graf se neobnovuje celý, pouze updateuje data (bez blikání)
+- Animace vypnuté pro rychlejší render
+- requestAnimationFrame pro flip display inicializaci
+- Lazy loading Chart.js knihovny
 
-**Micro-interactions**
-- Floating animation na status ikonách (3s loop)
-- Ambient pulse efekt na pozadí (6s)
-- Button hover states s glow efektem
-- Haptic feedback na mobilech (10ms vibrace)
-- Progress ring animace (0.6s cubic-bezier)
+## 🆕 Novinky ve verzi 2.1.0
+
+- ✨ **Kompletní redesign** - nový kompaktní layout ideální pro dashboardy
+- 📊 **Graf vedle kruhu** - grid rozložení místo vertikálního stacku
+- 🔄 **Eliminace blikání** - graf se už neobnovuje celý, pouze updateuje data
+- 🎴 **Flip Display integrace** - volitelné zobrazení hodnot pod grafem
+- 🛡️ **Error handling** - robustní zpracování chyb při inicializaci flip display
+- 🎨 **Jemnější design** - světlé pozadí s barevnými gradienty
+- 📱 **Lepší responzivita** - vylepšený mobilní layout
 
 ## 🛠️ Kompatibilita
 
 - Home Assistant 2024.1 nebo novější
 - Všechny standardní climate entity
 - Funguje s většinou termostatů (TRV, smart thermostats, atd.)
+- Volitelná integrace s flip-display-card pro zobrazení hodnot
 
 ## 📝 Poznámky
 
-- Graf zobrazuje historii z atributu `temperature` entity
-- Karta automaticky detekuje podporované HVAC módy
+- Graf zobrazuje historii aktuální i cílové teploty
+- Karta automaticky detekuje stav termostatu (heating/cooling/idle/off)
 - Minimální a maximální teplota se načítá z entity
-- Pokud entita neposkytuje historii, graf se nezobrazí
+- Pro flip display funkci je potřeba mít nainstalovanou [flip-display-card](https://github.com/your-repo/flip-display-card)
+- Graf neobnovuje celý element při update - eliminuje blikání
+- Flip display element se inicializuje asynchronně s error handlingem
 
 ## 🐛 Hlášení problémů
 
@@ -157,4 +167,8 @@ MIT License - použijte a upravujte podle potřeby!
 
 ## 👏 Poděkování
 
-Inspirováno moderními Material Design 3 trendy a komunitou Home Assistant.
+Inspirováno Google Nest termostatem a komunitou Home Assistant.
+
+---
+
+**v2.1.0** - Kompletní redesign pro lepší použitelnost na dashboardech 🎨
