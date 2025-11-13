@@ -76,9 +76,15 @@ show_graph: true
 graph_hours: 24
 step: 0.5
 flip_entity: sensor.bedroom_humidity  # volitelné
+flip_digits: 2
+flip_decimal_digits: 1
+flip_duration: 0.5
+flip_hide_background: true
 ```
 
 ## ⚙️ Konfigurační parametry
+
+### Základní nastavení
 
 | Parametr | Typ | Výchozí | Popis |
 |----------|-----|---------|-------|
@@ -87,7 +93,16 @@ flip_entity: sensor.bedroom_humidity  # volitelné
 | `show_graph` | boolean | `true` | Zobrazit historický graf teploty |
 | `graph_hours` | number | `12` | Počet hodin zobrazených v grafu (1-48) |
 | `step` | number | `0.5` | Krok pro změnu teploty tlačítky |
+
+### Flip Display nastavení
+
+| Parametr | Typ | Výchozí | Popis |
+|----------|-----|---------|-------|
 | `flip_entity` | string | `''` | Entita pro flip-display-card pod grafem (volitelné) |
+| `flip_digits` | number | `2` | Počet číslic včetně desetinných míst (1-10) |
+| `flip_decimal_digits` | number | `0` | Počet desetinných míst (0-5) |
+| `flip_duration` | number | `0.5` | Doba animace překlápění v sekundách (0-2) |
+| `flip_hide_background` | boolean | `true` | Skrýt pozadí flip display |
 
 ## 📸 Vzhled karty
 
@@ -137,9 +152,11 @@ Karta mění pozadí a barvy podle stavu termostatu:
 - 📊 **Graf vedle kruhu** - grid rozložení místo vertikálního stacku
 - 🔄 **Eliminace blikání** - graf se už neobnovuje celý, pouze updateuje data
 - 🎴 **Flip Display integrace** - volitelné zobrazení hodnot pod grafem
+- ⚙️ **Kompletní flip display konfigurace** - digits, decimal places, duration, hide background
 - 🛡️ **Error handling** - robustní zpracování chyb při inicializaci flip display
 - 🎨 **Jemnější design** - světlé pozadí s barevnými gradienty
 - 📱 **Lepší responzivita** - vylepšený mobilní layout
+- 🖥️ **Vizuální editor** - přehledný konfigurátor s validací a helper texty
 
 ## 🛠️ Kompatibilita
 
