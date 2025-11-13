@@ -563,21 +563,23 @@ class ThermostatCard extends HTMLElement {
         .flip-display-container {
           background: white;
           border-radius: 8px;
-          padding: 10px 16px;
+          padding: 14px 20px;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
           display: flex;
           align-items: center;
           justify-content: center;
           margin-top: 8px;
-          min-height: 50px;
+          min-height: 70px;
+          overflow: visible;
         }
 
         .flip-display-container flip-display-card {
-          --flip-card-height: 40px;
-          --flip-card-width: 28px;
-          --flip-card-gap: 4px;
-          --flip-card-font-size: 28px;
-          transform: scale(1);
+          --flip-card-height: 50px;
+          --flip-card-width: 36px;
+          --flip-card-gap: 6px;
+          --flip-card-font-size: 36px;
+          display: block;
+          width: 100%;
         }
 
         @media (max-width: 600px) {
