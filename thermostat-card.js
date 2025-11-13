@@ -31,6 +31,10 @@ class ThermostatCard extends HTMLElement {
       graph_hours: config.graph_hours || 12,
       step: config.step || 0.5,
       flip_entity: config.flip_entity || '',
+      flip_digits: config.flip_digits !== undefined ? config.flip_digits : 2,
+      flip_hide_background: config.flip_hide_background !== false,
+      flip_decimal_digits: config.flip_decimal_digits !== undefined ? config.flip_decimal_digits : 0,
+      flip_duration: config.flip_duration || 0.5,
       ...config
     };
 
@@ -683,13 +687,16 @@ class ThermostatCard extends HTMLElement {
       }
 
       try {
-        // Nastavení config pro flip display
-        flipCard.setConfig({
+        // Nastavení config pro flip display s uživatelskou konfigurací
+        const flipConfig = {
           entity: this._config.flip_entity,
-          digits: 2,
-          hide_background: true
-        });
+          digits: this._config.flip_digits,
+          hide_background: this._config.flip_hide_background,
+          decimal_digits: this._config.flip_decimal_digits,
+          duration: this._config.flip_duration
+        };
 
+        flipCard.setConfig(flipConfig);
         flipCard.hass = this._hass;
       } catch (error) {
         console.error('Chyba při nastavení flip display:', error);
@@ -724,7 +731,11 @@ class ThermostatCard extends HTMLElement {
       show_graph: true,
       graph_hours: 12,
       step: 0.5,
-      flip_entity: ''
+      flip_entity: '',
+      flip_digits: 2,
+      flip_hide_background: true,
+      flip_decimal_digits: 0,
+      flip_duration: 0.5
     };
   }
 }
@@ -811,6 +822,19 @@ class ThermostatCardEditor extends HTMLElement {
           color: var(--secondary-text-color);
           margin-top: 4px;
         }
+        .section-header {
+          font-size: 14px;
+          font-weight: 600;
+          color: var(--primary-text-color);
+          margin: 20px 0 12px 0;
+          padding-top: 20px;
+          border-top: 1px solid var(--divider-color);
+        }
+        .section-header:first-child {
+          margin-top: 0;
+          padding-top: 0;
+          border-top: none;
+        }
       </style>
 
       <div class="config-container">
@@ -849,6 +873,8 @@ class ThermostatCardEditor extends HTMLElement {
           <input type="number" id="step" min="0.1" max="2" step="0.1" value="${this._config.step || 0.5}"/>
         </div>
 
+        <div class="section-header">Flip Display Nastavení</div>
+
         <div class="config-row">
           <label for="flip_entity">Flip Display entita (volitelné)</label>
           <select id="flip_entity">
@@ -861,6 +887,31 @@ class ThermostatCardEditor extends HTMLElement {
           </select>
           <div class="helper-text">Entita pro flip display pod grafem</div>
         </div>
+
+        <div class="config-row">
+          <label for="flip_digits">Počet číslic</label>
+          <input type="number" id="flip_digits" min="1" max="10" value="${this._config.flip_digits !== undefined ? this._config.flip_digits : 2}"/>
+          <div class="helper-text">Celkový počet číslic včetně desetinných míst</div>
+        </div>
+
+        <div class="config-row">
+          <label for="flip_decimal_digits">Desetinná místa</label>
+          <input type="number" id="flip_decimal_digits" min="0" max="5" value="${this._config.flip_decimal_digits !== undefined ? this._config.flip_decimal_digits : 0}"/>
+          <div class="helper-text">Počet desetinných míst (0 = žádná)</div>
+        </div>
+
+        <div class="config-row">
+          <label for="flip_duration">Doba animace (sekundy)</label>
+          <input type="number" id="flip_duration" min="0" max="2" step="0.1" value="${this._config.flip_duration || 0.5}"/>
+          <div class="helper-text">Rychlost překlápění čísel</div>
+        </div>
+
+        <div class="config-row">
+          <div class="checkbox-row">
+            <input type="checkbox" id="flip_hide_background" ${this._config.flip_hide_background !== false ? 'checked' : ''}/>
+            <label for="flip_hide_background">Skrýt pozadí</label>
+          </div>
+        </div>
       </div>
     `;
 
@@ -870,6 +921,10 @@ class ThermostatCardEditor extends HTMLElement {
     const graphHoursInput = this.shadowRoot.getElementById('graph_hours');
     const stepInput = this.shadowRoot.getElementById('step');
     const flipEntitySelect = this.shadowRoot.getElementById('flip_entity');
+    const flipDigitsInput = this.shadowRoot.getElementById('flip_digits');
+    const flipDecimalDigitsInput = this.shadowRoot.getElementById('flip_decimal_digits');
+    const flipDurationInput = this.shadowRoot.getElementById('flip_duration');
+    const flipHideBackgroundCheckbox = this.shadowRoot.getElementById('flip_hide_background');
 
     entitySelect?.addEventListener('change', (e) => {
       this.configChanged({ ...this._config, entity: e.target.value });
@@ -893,6 +948,22 @@ class ThermostatCardEditor extends HTMLElement {
 
     flipEntitySelect?.addEventListener('change', (e) => {
       this.configChanged({ ...this._config, flip_entity: e.target.value });
+    });
+
+    flipDigitsInput?.addEventListener('input', (e) => {
+      this.configChanged({ ...this._config, flip_digits: parseInt(e.target.value) });
+    });
+
+    flipDecimalDigitsInput?.addEventListener('input', (e) => {
+      this.configChanged({ ...this._config, flip_decimal_digits: parseInt(e.target.value) });
+    });
+
+    flipDurationInput?.addEventListener('input', (e) => {
+      this.configChanged({ ...this._config, flip_duration: parseFloat(e.target.value) });
+    });
+
+    flipHideBackgroundCheckbox?.addEventListener('change', (e) => {
+      this.configChanged({ ...this._config, flip_hide_background: e.target.checked });
     });
   }
 }
