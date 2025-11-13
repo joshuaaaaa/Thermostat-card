@@ -76,9 +76,9 @@ show_graph: true
 graph_hours: 24
 step: 0.5
 flip_entity: sensor.bedroom_humidity  # volitelné
-flip_digits: 2
-flip_decimal_digits: 1
-flip_duration: 0.5
+flip_digits_per_card: 1  # 1 nebo 2 číslice na kartu
+flip_number_of_cards: 2  # celkový počet karet
+flip_font_size: '3em'    # velikost písma
 flip_hide_background: true
 ```
 
@@ -99,9 +99,9 @@ flip_hide_background: true
 | Parametr | Typ | Výchozí | Popis |
 |----------|-----|---------|-------|
 | `flip_entity` | string | `''` | Entita pro flip-display-card pod grafem (volitelné) |
-| `flip_digits` | number | `2` | Počet číslic včetně desetinných míst (1-10) |
-| `flip_decimal_digits` | number | `0` | Počet desetinných míst (0-5) |
-| `flip_duration` | number | `0.5` | Doba animace překlápění v sekundách (0-2) |
+| `flip_digits_per_card` | number | `1` | Počet číslic na jedné kartě (1 nebo 2) |
+| `flip_number_of_cards` | number | `2` | Celkový počet karet (1-99) |
+| `flip_font_size` | string | `'3em'` | Velikost písma (CSS hodnota, např. '3em', '48px') |
 | `flip_hide_background` | boolean | `true` | Skrýt pozadí flip display |
 
 ## 📸 Vzhled karty
