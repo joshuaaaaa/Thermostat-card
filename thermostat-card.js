@@ -252,14 +252,19 @@ class ThermostatCard extends HTMLElement {
       off: { color: this._config.custom_colors ? this._config.color_off : '#6b7280', icon: '○', label: 'Vypnuto' }
     };
 
-    const colorSchemes = {
-      heating: createColorScheme(baseColors.heating.color, baseColors.heating.icon, baseColors.heating.label),
-      cooling: createColorScheme(baseColors.cooling.color, baseColors.cooling.icon, baseColors.cooling.label),
-      idle: createColorScheme(baseColors.idle.color, baseColors.idle.icon, baseColors.idle.label),
-      off: createColorScheme(baseColors.off.color, baseColors.off.icon, baseColors.off.label)
-    };
+    // Normalizuj stav - Home Assistant může vracet různé hodnoty
+    const normalizedState = state?.toLowerCase();
 
-    return colorSchemes[state] || colorSchemes.off;
+    // Mapování různých stavů na naše kategorie
+    if (normalizedState === 'heat' || normalizedState === 'heating') {
+      return createColorScheme(baseColors.heating.color, baseColors.heating.icon, baseColors.heating.label);
+    } else if (normalizedState === 'cool' || normalizedState === 'cooling') {
+      return createColorScheme(baseColors.cooling.color, baseColors.cooling.icon, baseColors.cooling.label);
+    } else if (normalizedState === 'idle' || normalizedState === 'auto' || normalizedState === 'heat_cool' || normalizedState === 'dry' || normalizedState === 'fan_only') {
+      return createColorScheme(baseColors.idle.color, baseColors.idle.icon, baseColors.idle.label);
+    } else {
+      return createColorScheme(baseColors.off.color, baseColors.off.icon, baseColors.off.label);
+    }
   }
 
   getEntityState() {
@@ -590,18 +595,21 @@ class ThermostatCard extends HTMLElement {
         .flip-display-container {
           background: white;
           border-radius: 8px;
-          padding: 8px 12px;
+          padding: 12px 16px;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
           display: flex;
           align-items: center;
           justify-content: center;
           margin-top: 8px;
-          min-height: 45px;
+          min-height: 60px;
           overflow: visible;
+          width: 100%;
         }
 
         .flip-display-container flip-display-card {
-          transform: scale(0.9);
+          width: 100%;
+          display: flex;
+          justify-content: center;
         }
 
         @media (max-width: 600px) {
