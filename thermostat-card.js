@@ -21,6 +21,7 @@ class ThermostatCard extends HTMLElement {
     this._hass = null;
     this._chartLoaded = false;
     this._chartInstance = null;
+    this._rendered = false; // Flag pro prevenci blikání
   }
 
   /**
@@ -40,6 +41,7 @@ class ThermostatCard extends HTMLElement {
       ...config
     };
 
+    this._rendered = false; // Reset při změně konfigurace
     this.render();
   }
 
@@ -256,45 +258,49 @@ class ThermostatCard extends HTMLElement {
   }
 
   /**
-   * Získá barvy podle stavu - Ambient style 2025
+   * Získá barvy podle stavu - Barevné živé pozadí
    */
   getStateColors(state) {
     const colorSchemes = {
       heating: {
-        ambient: '#1a0e0e',
-        gradient: 'linear-gradient(180deg, rgba(255,90,90,0.15) 0%, rgba(255,60,60,0.05) 100%)',
+        ambient: 'linear-gradient(135deg, #ff6b6b 0%, #ff8e53 50%, #ff6b9d 100%)',
+        gradient: 'linear-gradient(180deg, rgba(255,107,107,0.25) 0%, rgba(255,142,83,0.15) 100%)',
         primary: '#ff6b6b',
         primaryRgb: '255, 107, 107',
         glow: '#ff4444',
         icon: '🔥',
-        label: 'Topení'
+        label: 'Topení',
+        bgColor: '#fff5f5'
       },
       cooling: {
-        ambient: '#0a1520',
-        gradient: 'linear-gradient(180deg, rgba(79,172,254,0.15) 0%, rgba(79,172,254,0.05) 100%)',
+        ambient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 50%, #43e97b 100%)',
+        gradient: 'linear-gradient(180deg, rgba(79,172,254,0.25) 0%, rgba(0,242,254,0.15) 100%)',
         primary: '#4facfe',
         primaryRgb: '79, 172, 254',
         glow: '#00d4ff',
         icon: '❄️',
-        label: 'Chlazení'
+        label: 'Chlazení',
+        bgColor: '#f0f9ff'
       },
       idle: {
-        ambient: '#0f1419',
-        gradient: 'linear-gradient(180deg, rgba(139,195,74,0.15) 0%, rgba(139,195,74,0.05) 100%)',
-        primary: '#8bc34a',
-        primaryRgb: '139, 195, 74',
-        glow: '#9ccc65',
+        ambient: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 50%, #a6c1ee 100%)',
+        gradient: 'linear-gradient(180deg, rgba(168,237,234,0.25) 0%, rgba(254,214,227,0.15) 100%)',
+        primary: '#5ed4c8',
+        primaryRgb: '94, 212, 200',
+        glow: '#4fd1c5',
         icon: '✓',
-        label: 'Připraveno'
+        label: 'Připraveno',
+        bgColor: '#f0fdfa'
       },
       off: {
-        ambient: '#0d0d0d',
-        gradient: 'linear-gradient(180deg, rgba(158,158,158,0.1) 0%, rgba(158,158,158,0.03) 100%)',
-        primary: '#9e9e9e',
-        primaryRgb: '158, 158, 158',
-        glow: '#757575',
+        ambient: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+        gradient: 'linear-gradient(180deg, rgba(102,126,234,0.2) 0%, rgba(118,75,162,0.1) 100%)',
+        primary: '#8b9dc3',
+        primaryRgb: '139, 157, 195',
+        glow: '#667eea',
         icon: '○',
-        label: 'Vypnuto'
+        label: 'Vypnuto',
+        bgColor: '#faf5ff'
       }
     };
 
@@ -346,6 +352,69 @@ class ThermostatCard extends HTMLElement {
   }
 
   /**
+   * Aktualizuje hodnoty v již vykresleném DOMu (prevence blikání)
+   */
+  updateValues(currentTemp, targetTemp, state, name, colors, strokeOffset) {
+    // Update pozadí
+    const ambientBg = this.shadowRoot.querySelector('.ambient-bg');
+    if (ambientBg) {
+      ambientBg.style.background = colors.ambient;
+    }
+
+    // Update status chip
+    const statusChip = this.shadowRoot.querySelector('.status-chip');
+    if (statusChip) {
+      statusChip.style.background = colors.primary;
+      statusChip.style.boxShadow = `0 4px 12px rgba(${colors.primaryRgb}, 0.3)`;
+      const statusIcon = statusChip.querySelector('.status-icon');
+      if (statusIcon) statusIcon.textContent = colors.icon;
+      const statusLabel = statusChip.querySelector('span:last-child');
+      if (statusLabel) statusLabel.textContent = colors.label;
+    }
+
+    // Update aktuální teplota
+    const currentTempEl = this.shadowRoot.querySelector('.current-temp');
+    if (currentTempEl) {
+      currentTempEl.style.color = colors.primary;
+      currentTempEl.style.textShadow = `0 4px 24px rgba(${colors.primaryRgb}, 0.3)`;
+      const tempText = currentTempEl.childNodes[0];
+      if (tempText) {
+        tempText.textContent = currentTemp !== null ? currentTemp.toFixed(1) : '--';
+      }
+    }
+
+    // Update cílová teplota
+    const targetValue = this.shadowRoot.querySelector('.target-value');
+    if (targetValue) {
+      targetValue.textContent = `${targetTemp !== null ? targetTemp.toFixed(1) : '--'}°`;
+    }
+
+    // Update progress ring
+    const progressRing = this.shadowRoot.querySelector('.progress-ring-fill');
+    if (progressRing) {
+      progressRing.style.stroke = colors.primary;
+      progressRing.style.strokeDashoffset = strokeOffset;
+      progressRing.style.filter = `drop-shadow(0 0 12px ${colors.glow})`;
+    }
+
+    // Update tlačítka
+    const buttons = this.shadowRoot.querySelectorAll('.neuro-button');
+    buttons.forEach(button => {
+      button.style.color = colors.primary;
+      const icon = button.querySelector('.button-icon');
+      if (icon) {
+        icon.style.textShadow = `0 2px 6px rgba(${colors.primaryRgb}, 0.2)`;
+      }
+    });
+
+    // Update název (pokud se změnil)
+    const nameEl = this.shadowRoot.querySelector('.name');
+    if (nameEl && nameEl.textContent !== name) {
+      nameEl.textContent = name;
+    }
+  }
+
+  /**
    * Vykreslí kartu
    */
   render() {
@@ -354,7 +423,7 @@ class ThermostatCard extends HTMLElement {
     const entity = this.getEntityState();
     if (!entity) {
       this.shadowRoot.innerHTML = `
-        <div style="padding: 24px; color: #ff6b6b; font-family: 'Inter', sans-serif; background: #1a1a1a; border-radius: 24px;">
+        <div style="padding: 24px; color: #ff6b6b; font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #ffe5e5, #ffd5d5); border-radius: 24px;">
           <strong>⚠️ Entita nenalezena</strong><br>
           <span style="opacity: 0.7; font-size: 14px;">"${this._config.entity}"</span>
         </div>
@@ -375,6 +444,15 @@ class ThermostatCard extends HTMLElement {
     const circumference = 2 * Math.PI * 110; // radius 110
     const strokeOffset = circumference - (progress / 100) * circumference;
 
+    // Pokud už je karta vykreslená, pouze updateuj hodnoty (prevence blikání)
+    if (this._rendered) {
+      this.updateValues(currentTemp, targetTemp, state, name, colors, strokeOffset);
+      return;
+    }
+
+    // První render - vytvoř kompletní HTML
+    this._rendered = true;
+
     this.shadowRoot.innerHTML = `
       <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -394,28 +472,29 @@ class ThermostatCard extends HTMLElement {
         .ambient-bg {
           background: ${colors.ambient};
           border-radius: 28px;
-          padding: 3px;
+          padding: 4px;
           position: relative;
           overflow: hidden;
-          transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+          transition: background 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
         }
 
         /* Glassmorphic Card */
         .glass-card {
           background: linear-gradient(135deg,
-            rgba(255, 255, 255, 0.12) 0%,
-            rgba(255, 255, 255, 0.06) 100%
+            rgba(255, 255, 255, 0.95) 0%,
+            rgba(255, 255, 255, 0.85) 100%
           );
-          backdrop-filter: blur(40px) saturate(180%);
-          -webkit-backdrop-filter: blur(40px) saturate(180%);
+          backdrop-filter: blur(20px) saturate(180%);
+          -webkit-backdrop-filter: blur(20px) saturate(180%);
           border-radius: 26px;
-          border: 1px solid rgba(255, 255, 255, 0.15);
+          border: 2px solid rgba(255, 255, 255, 0.8);
           padding: 32px 28px;
           position: relative;
           overflow: hidden;
           box-shadow:
-            0 8px 32px rgba(0, 0, 0, 0.4),
-            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            0 8px 32px rgba(0, 0, 0, 0.12),
+            inset 0 1px 0 rgba(255, 255, 255, 1);
         }
 
         /* Ambient glow */
@@ -427,18 +506,19 @@ class ThermostatCard extends HTMLElement {
           width: 200%;
           height: 200%;
           background: ${colors.gradient};
-          animation: ambientPulse 6s ease-in-out infinite;
+          animation: ambientPulse 8s ease-in-out infinite;
           pointer-events: none;
+          opacity: 0.3;
         }
 
         @keyframes ambientPulse {
           0%, 100% {
             transform: translate(0, 0) scale(1);
-            opacity: 0.6;
+            opacity: 0.3;
           }
           50% {
-            transform: translate(-10px, -10px) scale(1.1);
-            opacity: 0.8;
+            transform: translate(-10px, -10px) scale(1.05);
+            opacity: 0.5;
           }
         }
 
@@ -458,7 +538,7 @@ class ThermostatCard extends HTMLElement {
         .name {
           font-size: 18px;
           font-weight: 700;
-          color: rgba(255, 255, 255, 0.95);
+          color: rgba(0, 0, 0, 0.85);
           letter-spacing: -0.3px;
         }
 
@@ -467,20 +547,22 @@ class ThermostatCard extends HTMLElement {
           align-items: center;
           gap: 6px;
           padding: 6px 14px;
-          background: rgba(255, 255, 255, 0.12);
+          background: ${colors.primary};
           backdrop-filter: blur(10px);
           border-radius: 20px;
-          border: 1px solid rgba(255, 255, 255, 0.15);
+          border: 1px solid rgba(255, 255, 255, 0.3);
           font-size: 12px;
           font-weight: 600;
-          color: rgba(255, 255, 255, 0.9);
+          color: rgba(255, 255, 255, 0.95);
           letter-spacing: 0.3px;
           text-transform: uppercase;
+          box-shadow: 0 4px 12px rgba(${colors.primaryRgb}, 0.3);
+          transition: all 0.3s ease;
         }
 
         .status-icon {
           font-size: 14px;
-          filter: drop-shadow(0 0 8px ${colors.glow});
+          filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.5));
         }
 
         /* Circular Thermostat Control - Nest Inspired */
@@ -533,17 +615,18 @@ class ThermostatCard extends HTMLElement {
         .current-temp {
           font-size: 72px;
           font-weight: 800;
-          color: rgba(255, 255, 255, 0.98);
+          color: ${colors.primary};
           line-height: 1;
           letter-spacing: -3px;
-          text-shadow: 0 4px 24px rgba(${colors.primaryRgb}, 0.4);
+          text-shadow: 0 4px 24px rgba(${colors.primaryRgb}, 0.3);
           margin-bottom: 8px;
+          transition: color 0.6s ease, text-shadow 0.6s ease;
         }
 
         .temp-unit {
           font-size: 28px;
           font-weight: 600;
-          opacity: 0.5;
+          opacity: 0.6;
           margin-left: 2px;
         }
 
@@ -554,12 +637,13 @@ class ThermostatCard extends HTMLElement {
           gap: 8px;
           margin-top: 12px;
           font-size: 14px;
-          color: rgba(255, 255, 255, 0.6);
+          color: rgba(0, 0, 0, 0.5);
           font-weight: 500;
+          transition: color 0.3s ease;
         }
 
         .target-value {
-          color: rgba(255, 255, 255, 0.85);
+          color: rgba(0, 0, 0, 0.75);
           font-weight: 700;
           font-size: 16px;
         }
@@ -582,54 +666,63 @@ class ThermostatCard extends HTMLElement {
           width: 68px;
           height: 68px;
           border-radius: 50%;
-          background: linear-gradient(145deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05));
-          border: 1px solid rgba(255, 255, 255, 0.18);
+          background: linear-gradient(145deg, rgba(255,255,255,0.8), rgba(255,255,255,0.6));
+          border: 2px solid rgba(255, 255, 255, 0.9);
           cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
           font-size: 28px;
           font-weight: 600;
-          color: rgba(255, 255, 255, 0.9);
+          color: ${colors.primary};
           transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
           box-shadow:
-            0 6px 20px rgba(0, 0, 0, 0.3),
-            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            0 4px 16px rgba(0, 0, 0, 0.15),
+            inset 0 1px 0 rgba(255, 255, 255, 1);
           backdrop-filter: blur(10px);
           user-select: none;
           -webkit-tap-highlight-color: transparent;
         }
 
         .neuro-button:hover {
-          background: linear-gradient(145deg, rgba(255,255,255,0.22), rgba(255,255,255,0.12));
-          transform: translateY(-2px);
+          background: ${colors.primary};
+          color: white;
+          transform: translateY(-2px) scale(1.05);
           box-shadow:
-            0 8px 24px rgba(0, 0, 0, 0.35),
-            inset 0 1px 0 rgba(255, 255, 255, 0.25),
-            0 0 20px rgba(${colors.primaryRgb}, 0.3);
+            0 8px 24px rgba(${colors.primaryRgb}, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3);
         }
 
         .neuro-button:active {
-          transform: translateY(0px) scale(0.96);
+          transform: translateY(0px) scale(0.98);
           box-shadow:
-            0 4px 12px rgba(0, 0, 0, 0.3),
-            inset 0 2px 4px rgba(0, 0, 0, 0.2);
+            0 4px 12px rgba(${colors.primaryRgb}, 0.3),
+            inset 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .button-icon {
           font-size: 32px;
           line-height: 1;
-          text-shadow: 0 2px 8px rgba(${colors.primaryRgb}, 0.4);
+          text-shadow: 0 2px 6px rgba(${colors.primaryRgb}, 0.2);
+          transition: text-shadow 0.2s ease;
+        }
+
+        .neuro-button:hover .button-icon {
+          text-shadow: 0 2px 8px rgba(255, 255, 255, 0.5);
         }
 
         /* Graph Section */
         .graph-section {
           margin-top: 36px;
-          background: rgba(0, 0, 0, 0.25);
+          background: linear-gradient(135deg,
+            rgba(255, 255, 255, 0.6) 0%,
+            rgba(255, 255, 255, 0.4) 100%
+          );
           border-radius: 20px;
           padding: 24px 20px;
-          border: 1px solid rgba(255, 255, 255, 0.08);
+          border: 2px solid rgba(255, 255, 255, 0.7);
           backdrop-filter: blur(20px);
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
         }
 
         .graph-header {
@@ -643,7 +736,7 @@ class ThermostatCard extends HTMLElement {
         .graph-title {
           font-size: 13px;
           font-weight: 600;
-          color: rgba(255, 255, 255, 0.7);
+          color: rgba(0, 0, 0, 0.7);
           letter-spacing: 0.5px;
           text-transform: uppercase;
         }
@@ -651,6 +744,7 @@ class ThermostatCard extends HTMLElement {
         .graph-icon {
           font-size: 16px;
           opacity: 0.6;
+          filter: grayscale(0);
         }
 
         #temperatureChart {
