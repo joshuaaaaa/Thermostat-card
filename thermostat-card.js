@@ -30,6 +30,7 @@ class ThermostatCard extends HTMLElement {
       show_graph: config.show_graph !== false,
       graph_hours: config.graph_hours || 12,
       step: config.step || 0.5,
+      flip_entity: config.flip_entity || '',
       ...config
     };
 
@@ -325,6 +326,9 @@ class ThermostatCard extends HTMLElement {
     if (nameEl && nameEl.textContent !== name) {
       nameEl.textContent = name;
     }
+
+    // Update flip display
+    this.updateFlipDisplay();
   }
 
   render() {
@@ -543,13 +547,32 @@ class ThermostatCard extends HTMLElement {
           background: white;
           border-radius: 12px;
           padding: 12px;
-          height: 120px;
+          height: ${this._config.flip_entity ? '95px' : '120px'};
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
         }
 
         #temperatureChart {
           width: 100% !important;
           height: 100% !important;
+        }
+
+        .flip-display-container {
+          background: white;
+          border-radius: 8px;
+          padding: 6px 10px;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-top: 6px;
+          min-height: 28px;
+        }
+
+        .flip-display-container flip-display-card {
+          --flip-card-height: 20px;
+          --flip-card-width: 14px;
+          --flip-card-gap: 2px;
+          --flip-card-font-size: 14px;
         }
 
         @media (max-width: 600px) {
@@ -610,6 +633,11 @@ class ThermostatCard extends HTMLElement {
               <div class="graph-container">
                 <canvas id="temperatureChart"></canvas>
               </div>
+              ${this._config.flip_entity ? `
+                <div class="flip-display-container">
+                  <flip-display-card id="flipDisplay"></flip-display-card>
+                </div>
+              ` : ''}
             </div>
           ` : ''}
         </div>
@@ -626,6 +654,36 @@ class ThermostatCard extends HTMLElement {
     if (increaseBtn) {
       increaseBtn.addEventListener('click', () => this.handleTemperatureChange(this._config.step));
     }
+
+    // Nastavení flip display pokud je konfigurace
+    if (this._config.flip_entity) {
+      this.setupFlipDisplay();
+    }
+  }
+
+  setupFlipDisplay() {
+    const flipCard = this.shadowRoot.getElementById('flipDisplay');
+    if (!flipCard || !this._hass) return;
+
+    // Nastavení flip display card s entitou
+    const flipEntity = this._hass.states[this._config.flip_entity];
+    if (!flipEntity) return;
+
+    // Nastavení config pro flip display
+    flipCard.setConfig({
+      entity: this._config.flip_entity,
+      digits: 2,
+      hide_background: true
+    });
+
+    flipCard.hass = this._hass;
+  }
+
+  updateFlipDisplay() {
+    const flipCard = this.shadowRoot.getElementById('flipDisplay');
+    if (flipCard && this._hass && this._config.flip_entity) {
+      flipCard.hass = this._hass;
+    }
   }
 
   getCardSize() {
@@ -641,7 +699,8 @@ class ThermostatCard extends HTMLElement {
       entity: '',
       show_graph: true,
       graph_hours: 12,
-      step: 0.5
+      step: 0.5,
+      flip_entity: ''
     };
   }
 }
@@ -677,8 +736,12 @@ class ThermostatCardEditor extends HTMLElement {
   render() {
     if (!this._hass) return;
 
-    const entities = Object.keys(this._hass.states)
+    const climateEntities = Object.keys(this._hass.states)
       .filter(entityId => entityId.startsWith('climate.'))
+      .sort();
+
+    const allEntities = Object.keys(this._hass.states)
+      .filter(entityId => entityId.startsWith('sensor.') || entityId.startsWith('input_number.'))
       .sort();
 
     this.shadowRoot.innerHTML = `
@@ -726,7 +789,7 @@ class ThermostatCardEditor extends HTMLElement {
           <label for="entity">Climate entita *</label>
           <select id="entity">
             <option value="">Vyberte entitu...</option>
-            ${entities.map(entityId => `
+            ${climateEntities.map(entityId => `
               <option value="${entityId}" ${this._config.entity === entityId ? 'selected' : ''}>
                 ${this._hass.states[entityId].attributes.friendly_name || entityId}
               </option>
@@ -756,6 +819,19 @@ class ThermostatCardEditor extends HTMLElement {
           <label for="step">Krok změny teploty</label>
           <input type="number" id="step" min="0.1" max="2" step="0.1" value="${this._config.step || 0.5}"/>
         </div>
+
+        <div class="config-row">
+          <label for="flip_entity">Flip Display entita (volitelné)</label>
+          <select id="flip_entity">
+            <option value="">Žádná</option>
+            ${allEntities.map(entityId => `
+              <option value="${entityId}" ${this._config.flip_entity === entityId ? 'selected' : ''}>
+                ${this._hass.states[entityId].attributes.friendly_name || entityId}
+              </option>
+            `).join('')}
+          </select>
+          <div class="helper-text">Entita pro flip display pod grafem</div>
+        </div>
       </div>
     `;
 
@@ -764,6 +840,7 @@ class ThermostatCardEditor extends HTMLElement {
     const showGraphCheckbox = this.shadowRoot.getElementById('show_graph');
     const graphHoursInput = this.shadowRoot.getElementById('graph_hours');
     const stepInput = this.shadowRoot.getElementById('step');
+    const flipEntitySelect = this.shadowRoot.getElementById('flip_entity');
 
     entitySelect?.addEventListener('change', (e) => {
       this.configChanged({ ...this._config, entity: e.target.value });
@@ -783,6 +860,10 @@ class ThermostatCardEditor extends HTMLElement {
 
     stepInput?.addEventListener('input', (e) => {
       this.configChanged({ ...this._config, step: parseFloat(e.target.value) });
+    });
+
+    flipEntitySelect?.addEventListener('change', (e) => {
+      this.configChanged({ ...this._config, flip_entity: e.target.value });
     });
   }
 }
