@@ -760,6 +760,11 @@ class ThermostatCardEditor extends HTMLElement {
   render() {
     if (!this._hass) return;
 
+    // Inicializuj config pokud neexistuje
+    if (!this._config) {
+      this._config = {};
+    }
+
     const climateEntities = Object.keys(this._hass.states)
       .filter(entityId => entityId.startsWith('climate.'))
       .sort();
