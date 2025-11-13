@@ -31,10 +31,10 @@ class ThermostatCard extends HTMLElement {
       graph_hours: config.graph_hours || 12,
       step: config.step || 0.5,
       flip_entity: config.flip_entity || '',
-      flip_digits: config.flip_digits !== undefined ? config.flip_digits : 2,
+      flip_digits_per_card: config.flip_digits_per_card !== undefined ? config.flip_digits_per_card : 1,
+      flip_number_of_cards: config.flip_number_of_cards !== undefined ? config.flip_number_of_cards : 2,
       flip_hide_background: config.flip_hide_background !== false,
-      flip_decimal_digits: config.flip_decimal_digits !== undefined ? config.flip_decimal_digits : 0,
-      flip_duration: config.flip_duration || 0.5,
+      flip_font_size: config.flip_font_size || '3em',
       ...config
     };
 
@@ -563,23 +563,13 @@ class ThermostatCard extends HTMLElement {
         .flip-display-container {
           background: white;
           border-radius: 8px;
-          padding: 14px 20px;
+          padding: 16px;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
           display: flex;
           align-items: center;
           justify-content: center;
           margin-top: 8px;
-          min-height: 70px;
-          overflow: visible;
-        }
-
-        .flip-display-container flip-display-card {
-          --flip-card-height: 50px;
-          --flip-card-width: 36px;
-          --flip-card-gap: 6px;
-          --flip-card-font-size: 36px;
-          display: block;
-          width: 100%;
+          min-height: auto;
         }
 
         @media (max-width: 600px) {
@@ -690,13 +680,15 @@ class ThermostatCard extends HTMLElement {
       }
 
       try {
-        // Nastavení config pro flip display s uživatelskou konfigurací
+        // Nastavení config pro flip display podle skutečné API
         const flipConfig = {
           entity: this._config.flip_entity,
-          digits: this._config.flip_digits,
-          hide_background: this._config.flip_hide_background,
-          decimal_digits: this._config.flip_decimal_digits,
-          duration: this._config.flip_duration
+          digits_per_card: this._config.flip_digits_per_card,
+          number_of_cards: this._config.flip_number_of_cards,
+          hideBackground: this._config.flip_hide_background,
+          styles: {
+            fontSize: this._config.flip_font_size
+          }
         };
 
         flipCard.setConfig(flipConfig);
@@ -735,10 +727,10 @@ class ThermostatCard extends HTMLElement {
       graph_hours: 12,
       step: 0.5,
       flip_entity: '',
-      flip_digits: 2,
+      flip_digits_per_card: 1,
+      flip_number_of_cards: 2,
       flip_hide_background: true,
-      flip_decimal_digits: 0,
-      flip_duration: 0.5
+      flip_font_size: '3em'
     };
   }
 }
@@ -892,21 +884,24 @@ class ThermostatCardEditor extends HTMLElement {
         </div>
 
         <div class="config-row">
-          <label for="flip_digits">Počet číslic</label>
-          <input type="number" id="flip_digits" min="1" max="10" value="${this._config.flip_digits !== undefined ? this._config.flip_digits : 2}"/>
-          <div class="helper-text">Celkový počet číslic včetně desetinných míst</div>
+          <label for="flip_digits_per_card">Číslic na kartu</label>
+          <select id="flip_digits_per_card">
+            <option value="1" ${this._config.flip_digits_per_card === 1 ? 'selected' : ''}>1 číslice</option>
+            <option value="2" ${this._config.flip_digits_per_card === 2 ? 'selected' : ''}>2 číslice</option>
+          </select>
+          <div class="helper-text">Počet číslic na jedné kartě (1 nebo 2)</div>
         </div>
 
         <div class="config-row">
-          <label for="flip_decimal_digits">Desetinná místa</label>
-          <input type="number" id="flip_decimal_digits" min="0" max="5" value="${this._config.flip_decimal_digits !== undefined ? this._config.flip_decimal_digits : 0}"/>
-          <div class="helper-text">Počet desetinných míst (0 = žádná)</div>
+          <label for="flip_number_of_cards">Počet karet</label>
+          <input type="number" id="flip_number_of_cards" min="1" max="99" value="${this._config.flip_number_of_cards !== undefined ? this._config.flip_number_of_cards : 2}"/>
+          <div class="helper-text">Celkový počet karet (1-99)</div>
         </div>
 
         <div class="config-row">
-          <label for="flip_duration">Doba animace (sekundy)</label>
-          <input type="number" id="flip_duration" min="0" max="2" step="0.1" value="${this._config.flip_duration || 0.5}"/>
-          <div class="helper-text">Rychlost překlápění čísel</div>
+          <label for="flip_font_size">Velikost písma</label>
+          <input type="text" id="flip_font_size" placeholder="např. 3em nebo 48px" value="${this._config.flip_font_size || '3em'}"/>
+          <div class="helper-text">CSS hodnota velikosti (např. 3em, 48px)</div>
         </div>
 
         <div class="config-row">
@@ -924,9 +919,9 @@ class ThermostatCardEditor extends HTMLElement {
     const graphHoursInput = this.shadowRoot.getElementById('graph_hours');
     const stepInput = this.shadowRoot.getElementById('step');
     const flipEntitySelect = this.shadowRoot.getElementById('flip_entity');
-    const flipDigitsInput = this.shadowRoot.getElementById('flip_digits');
-    const flipDecimalDigitsInput = this.shadowRoot.getElementById('flip_decimal_digits');
-    const flipDurationInput = this.shadowRoot.getElementById('flip_duration');
+    const flipDigitsPerCardSelect = this.shadowRoot.getElementById('flip_digits_per_card');
+    const flipNumberOfCardsInput = this.shadowRoot.getElementById('flip_number_of_cards');
+    const flipFontSizeInput = this.shadowRoot.getElementById('flip_font_size');
     const flipHideBackgroundCheckbox = this.shadowRoot.getElementById('flip_hide_background');
 
     entitySelect?.addEventListener('change', (e) => {
@@ -953,16 +948,16 @@ class ThermostatCardEditor extends HTMLElement {
       this.configChanged({ ...this._config, flip_entity: e.target.value });
     });
 
-    flipDigitsInput?.addEventListener('input', (e) => {
-      this.configChanged({ ...this._config, flip_digits: parseInt(e.target.value) });
+    flipDigitsPerCardSelect?.addEventListener('change', (e) => {
+      this.configChanged({ ...this._config, flip_digits_per_card: parseInt(e.target.value) });
     });
 
-    flipDecimalDigitsInput?.addEventListener('input', (e) => {
-      this.configChanged({ ...this._config, flip_decimal_digits: parseInt(e.target.value) });
+    flipNumberOfCardsInput?.addEventListener('input', (e) => {
+      this.configChanged({ ...this._config, flip_number_of_cards: parseInt(e.target.value) });
     });
 
-    flipDurationInput?.addEventListener('input', (e) => {
-      this.configChanged({ ...this._config, flip_duration: parseFloat(e.target.value) });
+    flipFontSizeInput?.addEventListener('input', (e) => {
+      this.configChanged({ ...this._config, flip_font_size: e.target.value });
     });
 
     flipHideBackgroundCheckbox?.addEventListener('change', (e) => {
