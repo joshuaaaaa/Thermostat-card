@@ -376,7 +376,7 @@ class ThermostatCard extends HTMLElement {
 
     const progress = this.calculateProgress(currentTemp, minTemp, maxTemp);
     const targetProgress = this.calculateProgress(targetTemp, minTemp, maxTemp);
-    const circumference = 2 * Math.PI * 65;
+    const circumference = 2 * Math.PI * 52;
     const strokeOffset = circumference - (progress / 100) * circumference;
     const targetStrokeOffset = circumference - (targetProgress / 100) * circumference;
 
@@ -397,8 +397,8 @@ class ThermostatCard extends HTMLElement {
 
         .thermostat-card {
           background: ${colors.bg};
-          border-radius: 16px;
-          padding: 16px;
+          border-radius: 12px;
+          padding: 12px;
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
           transition: background 0.4s ease;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -408,11 +408,11 @@ class ThermostatCard extends HTMLElement {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 12px;
+          margin-bottom: 8px;
         }
 
         .entity-name {
-          font-size: 14px;
+          font-size: 13px;
           font-weight: 600;
           color: #1f2937;
         }
@@ -420,11 +420,11 @@ class ThermostatCard extends HTMLElement {
         .status-chip {
           display: inline-flex;
           align-items: center;
-          gap: 4px;
-          padding: 4px 10px;
+          gap: 3px;
+          padding: 3px 8px;
           background: ${colors.primary};
-          border-radius: 12px;
-          font-size: 11px;
+          border-radius: 10px;
+          font-size: 10px;
           font-weight: 600;
           color: white;
           text-transform: uppercase;
@@ -434,13 +434,13 @@ class ThermostatCard extends HTMLElement {
         }
 
         .status-icon {
-          font-size: 11px;
+          font-size: 10px;
         }
 
         .main-content {
           display: grid;
-          grid-template-columns: ${this._config.show_graph ? '180px 1fr' : '1fr'};
-          gap: 16px;
+          grid-template-columns: ${this._config.show_graph ? '160px 1fr' : '1fr'};
+          gap: 12px;
           align-items: center;
         }
 
@@ -448,13 +448,13 @@ class ThermostatCard extends HTMLElement {
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 12px;
+          gap: 8px;
         }
 
         .circle-container {
           position: relative;
-          width: 150px;
-          height: 150px;
+          width: 120px;
+          height: 120px;
         }
 
         .progress-ring {
@@ -498,7 +498,7 @@ class ThermostatCard extends HTMLElement {
         }
 
         .current-temp-value {
-          font-size: 48px;
+          font-size: 36px;
           font-weight: 700;
           color: ${colors.primary};
           line-height: 1;
@@ -506,14 +506,14 @@ class ThermostatCard extends HTMLElement {
         }
 
         .temp-unit {
-          font-size: 20px;
+          font-size: 16px;
           opacity: 0.5;
           margin-left: 2px;
         }
 
         .target-temp {
-          margin-top: 4px;
-          font-size: 12px;
+          margin-top: 2px;
+          font-size: 11px;
           color: #6b7280;
         }
 
@@ -524,18 +524,18 @@ class ThermostatCard extends HTMLElement {
 
         .controls {
           display: flex;
-          gap: 10px;
+          gap: 8px;
           justify-content: center;
         }
 
         .control-btn {
-          width: 44px;
-          height: 44px;
+          width: 36px;
+          height: 36px;
           border-radius: 50%;
           background: white;
           border: 2px solid ${colors.primary};
           color: ${colors.primary};
-          font-size: 20px;
+          font-size: 18px;
           font-weight: 600;
           cursor: pointer;
           display: flex;
@@ -559,7 +559,7 @@ class ThermostatCard extends HTMLElement {
         .graph-section {
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: 6px;
         }
 
         .graph-header {
@@ -581,9 +581,9 @@ class ThermostatCard extends HTMLElement {
 
         .graph-container {
           background: white;
-          border-radius: 12px;
-          padding: 12px;
-          height: ${this._config.flip_entity ? '100px' : '120px'};
+          border-radius: 10px;
+          padding: 10px;
+          height: ${this._config.flip_entity ? '90px' : '110px'};
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
         }
 
@@ -595,13 +595,13 @@ class ThermostatCard extends HTMLElement {
         .flip-display-container {
           background: white;
           border-radius: 8px;
-          padding: 12px 16px;
+          padding: 10px 12px;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
           display: flex;
           align-items: center;
           justify-content: center;
-          margin-top: 8px;
-          min-height: 60px;
+          margin-top: 6px;
+          min-height: 50px;
           overflow: visible;
           width: 100%;
         }
@@ -618,12 +618,12 @@ class ThermostatCard extends HTMLElement {
           }
 
           .circle-container {
-            width: 140px;
-            height: 140px;
+            width: 110px;
+            height: 110px;
           }
 
           .current-temp-value {
-            font-size: 42px;
+            font-size: 32px;
           }
         }
       </style>
@@ -640,10 +640,10 @@ class ThermostatCard extends HTMLElement {
         <div class="main-content">
           <div class="thermostat-display">
             <div class="circle-container">
-              <svg class="progress-ring" width="150" height="150">
-                <circle class="progress-ring-bg" cx="75" cy="75" r="65"/>
-                <circle class="progress-ring-target" cx="75" cy="75" r="65"/>
-                <circle class="progress-ring-fill" cx="75" cy="75" r="65"/>
+              <svg class="progress-ring" width="120" height="120">
+                <circle class="progress-ring-bg" cx="60" cy="60" r="52"/>
+                <circle class="progress-ring-target" cx="60" cy="60" r="52"/>
+                <circle class="progress-ring-fill" cx="60" cy="60" r="52"/>
               </svg>
               <div class="temp-display">
                 <div>
