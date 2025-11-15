@@ -3,8 +3,9 @@
  * Kompaktní karta pro ovládání termostatů v Home Assistant
  *
  * Design inspirovaný Nest termostatem - kompaktní, praktický, dashboard-friendly
+ * Profesionální Flip Display inspirovaný @pqina/flip
  *
- * @version 2.1.0
+ * @version 3.0.0
  * @author Claude
  */
 
@@ -17,6 +18,7 @@ class ThermostatCard extends HTMLElement {
     this._chartLoaded = false;
     this._chartInstance = null;
     this._rendered = false;
+    this._previousFlipValue = null;
   }
 
   setConfig(config) {
@@ -34,7 +36,16 @@ class ThermostatCard extends HTMLElement {
       flip_digits_per_card: config.flip_digits_per_card !== undefined ? config.flip_digits_per_card : 1,
       flip_number_of_cards: config.flip_number_of_cards !== undefined ? config.flip_number_of_cards : 2,
       flip_hide_background: config.flip_hide_background !== false,
-      flip_font_size: config.flip_font_size || '3em',
+      flip_font_size: config.flip_font_size || '2em',
+      flip_show_label: config.flip_show_label !== false,
+      flip_label_text: config.flip_label_text || '',
+      flip_show_unit: config.flip_show_unit !== false,
+      flip_unit: config.flip_unit || '',
+      flip_decimal_places: config.flip_decimal_places !== undefined ? config.flip_decimal_places : 1,
+      flip_animation_duration: config.flip_animation_duration || 600,
+      flip_card_color: config.flip_card_color || '#ffffff',
+      flip_background_color: config.flip_background_color || '#333333',
+      flip_gap: config.flip_gap || 6,
       custom_colors: config.custom_colors !== undefined ? config.custom_colors : false,
       color_heating: config.color_heating || '#ff6b6b',
       color_cooling: config.color_cooling || '#4facfe',
@@ -353,6 +364,95 @@ class ThermostatCard extends HTMLElement {
     this.updateFlipDisplay();
   }
 
+  getFlipCards() {
+    if (!this._config.flip_entity || !this._hass) return '';
+
+    const flipEntity = this._hass.states[this._config.flip_entity];
+    if (!flipEntity) return '';
+
+    const value = parseFloat(flipEntity.state);
+    if (isNaN(value)) return '';
+
+    const valueStr = value.toFixed(this._config.flip_decimal_places);
+    const digits = valueStr.replace('.', '').split('');
+    const digitsPerCard = this._config.flip_digits_per_card;
+    const numberOfCards = this._config.flip_number_of_cards;
+
+    // Automaticky detekuj jednotku z entity
+    const autoUnit = flipEntity.attributes.unit_of_measurement || '';
+    const displayUnit = this._config.flip_unit || autoUnit;
+
+    // Automaticky detekuj label z friendly_name
+    const autoLabel = flipEntity.attributes.friendly_name || '';
+    const displayLabel = this._config.flip_label_text || autoLabel;
+
+    let html = '<div class="flip-display-container">';
+
+    // Label nahoře
+    if (this._config.flip_show_label && displayLabel) {
+      html += `<div class="flip-label">${displayLabel}</div>`;
+    }
+
+    // Řádek s kartami a jednotkou
+    html += '<div class="flip-cards-row">';
+
+    // Flip karty - PŘESNÁ STRUKTURA z @pqina/flip
+    for (let i = 0; i < numberOfCards; i++) {
+      const startIdx = i * digitsPerCard;
+      const endIdx = startIdx + digitsPerCard;
+      const cardDigits = digits.slice(startIdx, endIdx);
+      const displayValue = cardDigits.join('') || '0';
+
+      html += `
+        <div class="flip-card ${this._config.flip_hide_background ? 'no-background' : ''}" data-card="${i}" style="font-size: ${this._config.flip_font_size};">
+          <!-- Spacer pro výšku -->
+          <span class="flip-card-spacer">${displayValue}</span>
+
+          <!-- Shadow elementy (statické rámy) -->
+          <span class="flip-card-shadow flip-shadow-top"></span>
+          <span class="flip-card-shadow flip-shadow-bottom"></span>
+
+          <!-- Bottom shadow pod kartou -->
+          <span class="flip-card-bottom-shadow"></span>
+
+          <!-- Animační kontejner -->
+          <div class="flip-card-animation">
+            <!-- Front panel (horní polovina) -->
+            <div class="flip-panel-front">
+              <div class="flip-panel-front-text">
+                <div class="flip-panel-text-wrapper">
+                  <span>${displayValue}</span>
+                </div>
+              </div>
+              <span class="flip-panel-front-shadow"></span>
+            </div>
+
+            <!-- Back panel (dolní polovina) -->
+            <div class="flip-panel-back">
+              <div class="flip-panel-back-text">
+                <div class="flip-panel-text-wrapper">
+                  <span>${displayValue}</span>
+                </div>
+              </div>
+              <span class="flip-panel-back-shadow"></span>
+              <span class="flip-panel-back-highlight"></span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Jednotka
+    if (this._config.flip_show_unit && displayUnit) {
+      html += `<div class="flip-unit">${displayUnit}</div>`;
+    }
+
+    html += '</div>'; // close flip-cards-row
+    html += '</div>'; // close flip-display-container
+
+    return html;
+  }
+
   render() {
     if (!this._hass || !this._config.entity) return;
 
@@ -389,6 +489,13 @@ class ThermostatCard extends HTMLElement {
 
     this.shadowRoot.innerHTML = `
       <style>
+        :host {
+          --flip-gap: ${this._config.flip_gap}px;
+          --flip-card-color: ${this._config.flip_card_color};
+          --flip-background-color: ${this._config.flip_background_color};
+          --flip-animation-duration: ${this._config.flip_animation_duration}ms;
+        }
+
         * {
           box-sizing: border-box;
           margin: 0;
@@ -592,24 +699,305 @@ class ThermostatCard extends HTMLElement {
           height: 100% !important;
         }
 
+        /* Flip Display - Profesionální implementace s přesnými hodnotami */
+        .flip-display {
+          display: flex;
+          justify-content: center;
+          gap: var(--flip-gap, 6px);
+          margin-top: 6px;
+        }
+
         .flip-display-container {
           background: white;
           border-radius: 8px;
           padding: 10px 12px;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
           display: flex;
+          flex-direction: column;
           align-items: center;
-          justify-content: center;
+          gap: 8px;
           margin-top: 6px;
           min-height: 50px;
           overflow: visible;
           width: 100%;
         }
 
-        .flip-display-container flip-display-card {
-          width: 100%;
+        .flip-label {
+          font-size: 11px;
+          font-weight: 600;
+          color: #6b7280;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+
+        .flip-cards-row {
           display: flex;
+          gap: 0;
+          align-items: center;
+          line-height: 1.8em;
+        }
+
+        .flip-unit {
+          font-size: 16px;
+          font-weight: 600;
+          color: #6b7280;
+          margin-left: 8px;
+        }
+
+        .flip-card {
+          position: relative;
+          text-align: center;
+          width: 1.25em;
+          aspect-ratio: 1.25 / 1.8;
+          perspective: 4em;
+          border-radius: 0.15em;
+          letter-spacing: 0.06em;
+          margin-left: 0.025em;
+          margin-right: 0.025em;
+        }
+
+        .flip-card.no-background {
+          background: none !important;
+          box-shadow: none !important;
+        }
+
+        /* Spacer pro správnou výšku */
+        .flip-card-spacer {
+          visibility: hidden;
+          display: block;
+          font-weight: 700;
+          line-height: 1.8em;
+        }
+
+        /* Shadow efekty - DVĚ VRSTVY! */
+        .flip-card-shadow {
+          position: absolute;
+          inset: 1px;
+          color: transparent !important;
+          background: none !important;
+          pointer-events: none;
+        }
+
+        .flip-shadow-top {
+          bottom: calc(50% - 1px);
+          border-top-left-radius: 0.15em;
+          border-top-right-radius: 0.15em;
+          box-shadow:
+            0 0.125em 0.3125em rgba(0, 0, 0, 0.25),
+            0 0.02125em 0.06125em rgba(0, 0, 0, 0.25);
+        }
+
+        .flip-shadow-bottom {
+          top: calc(50% + 1px);
+          border-bottom-left-radius: 0.15em;
+          border-bottom-right-radius: 0.15em;
+          box-shadow:
+            0 0.125em 0.3125em rgba(0, 0, 0, 0.25),
+            0 0.02125em 0.06125em rgba(0, 0, 0, 0.25);
+        }
+
+        /* Animační kontejner */
+        .flip-card-animation {
+          z-index: 1;
+          perspective: 4em;
+          width: 100%;
+          height: 100%;
+          position: absolute;
+          top: 0;
+          left: 0;
+        }
+
+        /* Front a back panely - 51% výška! */
+        .flip-panel-front,
+        .flip-panel-back {
+          backface-visibility: hidden;
+          width: 100%;
+          height: 51%;
+          transform-style: preserve-3d;
+          position: absolute;
+          left: 0;
+          background-color: var(--flip-background-color, #333);
+          border-radius: 0.15em;
+          overflow: hidden;
+        }
+
+        .flip-panel-front {
+          transform-origin: bottom;
+          z-index: 2;
+          top: 0;
+          border-bottom-left-radius: 0;
+          border-bottom-right-radius: 0;
+          box-shadow: inset 0 1px rgba(255, 255, 255, 0.05);
+        }
+
+        .flip-panel-back {
+          transform-origin: top;
+          z-index: 1;
+          top: 50%;
+          border-top-left-radius: 0;
+          border-top-right-radius: 0;
+          box-shadow: inset 0 -1px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Gradient overlay na back panelu - PŘESNÁ HODNOTA z @pqina/flip */
+        .flip-panel-back::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background-image: linear-gradient(rgba(0, 0, 0, 0.3) 1px, rgba(0, 0, 0, 0.15) 0, transparent 30%);
+          width: 100%;
+          height: 100%;
+          z-index: 1;
+        }
+
+        /* Text containers - PŘESNÁ STRUKTURA z @pqina/flip */
+        .flip-panel-front-text,
+        .flip-panel-back-text {
+          height: 100%;
+          position: absolute;
+          top: 0;
+          left: -1px;
+          right: -1px;
+          overflow: hidden;
+        }
+
+        .flip-panel-text-wrapper {
+          height: 100%;
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          display: flex;
+          align-items: center;
           justify-content: center;
+          margin-top: calc(var(--flip-text-offset-vertical, 0em) + 0.04em);
+          margin-left: calc(var(--flip-text-offset-horizontal, 0em) - 0.15em);
+        }
+
+        /* Front panel - text wrapper zabírá 200% výšky, zobrazuje se horní polovina */
+        .flip-panel-front-text .flip-panel-text-wrapper {
+          height: 200%;
+          top: 0;
+        }
+
+        /* Back panel - text wrapper zabírá 200% výšky, posun -100% aby se zobrazila spodní polovina */
+        .flip-panel-back-text .flip-panel-text-wrapper {
+          height: 200%;
+          top: -100%;
+        }
+
+        .flip-panel-text-wrapper span {
+          font-weight: 700;
+          color: var(--flip-card-color, #fff);
+          position: relative;
+          z-index: 2;
+        }
+
+        /* Shadow overlay pro animaci - PŘESNÁ STRUKTURA z @pqina/flip */
+        .flip-panel-front-shadow,
+        .flip-panel-back-shadow,
+        .flip-panel-back-highlight {
+          opacity: 0;
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+        }
+
+        .flip-panel-front-shadow {
+          background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.3));
+          border-top-left-radius: 0.15em;
+          border-top-right-radius: 0.15em;
+          z-index: 3;
+        }
+
+        .flip-panel-back-shadow {
+          background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.5));
+          border-bottom-left-radius: 0.15em;
+          border-bottom-right-radius: 0.15em;
+          z-index: 2;
+        }
+
+        .flip-panel-back-highlight {
+          background-image: linear-gradient(rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.3));
+          border-bottom-left-radius: 0.15em;
+          border-bottom-right-radius: 0.15em;
+          z-index: 3;
+        }
+
+        /* Card shadow pod kartou - PŘESNÉ HODNOTY */
+        .flip-card-bottom-shadow {
+          position: absolute;
+          bottom: 0.125em;
+          left: 0.15em;
+          right: 0.15em;
+          height: 0.5em;
+          background-color: transparent;
+          border-radius: 0;
+          box-shadow: 0 0.125em 0.25em rgba(0, 0, 0, 0.5), 0 0.125em 0.5em rgba(0, 0, 0, 0.75);
+          z-index: 0;
+          opacity: 0;
+          transform-origin: 0 100%;
+        }
+
+        /* Animace */
+        .flip-card.flipping .flip-panel-front {
+          animation: flipPanelDown var(--flip-animation-duration, 600ms) cubic-bezier(0.15, 0.85, 0.35, 1);
+        }
+
+        .flip-card.flipping .flip-panel-back {
+          animation: flipPanelUp var(--flip-animation-duration, 600ms) cubic-bezier(0.15, 0.85, 0.35, 1);
+        }
+
+        .flip-card.flipping .flip-panel-front-shadow {
+          animation: fadeInOut var(--flip-animation-duration, 600ms) cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .flip-card.flipping .flip-panel-back-shadow {
+          animation: fadeInOut var(--flip-animation-duration, 600ms) cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .flip-card.flipping .flip-panel-back-highlight {
+          animation: fadeInOut var(--flip-animation-duration, 600ms) cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .flip-card.flipping .flip-card-bottom-shadow {
+          animation: shadowPulse var(--flip-animation-duration, 600ms) cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes flipPanelDown {
+          0% {
+            transform: rotateX(0deg);
+          }
+          100% {
+            transform: rotateX(180deg);
+          }
+        }
+
+        @keyframes flipPanelUp {
+          0% {
+            transform: rotateX(-180deg);
+          }
+          100% {
+            transform: rotateX(0deg);
+          }
+        }
+
+        @keyframes fadeInOut {
+          0%, 100% {
+            opacity: 0;
+          }
+          50% {
+            opacity: 1;
+          }
+        }
+
+        @keyframes shadowPulse {
+          0%, 100% {
+            opacity: 0;
+          }
+          50% {
+            opacity: 0.6;
+          }
         }
 
         @media (max-width: 600px) {
@@ -671,11 +1059,7 @@ class ThermostatCard extends HTMLElement {
               <div class="graph-container">
                 <canvas id="temperatureChart"></canvas>
               </div>
-              ${this._config.flip_entity ? `
-                <div class="flip-display-container">
-                  <flip-display-card id="flipDisplay"></flip-display-card>
-                </div>
-              ` : ''}
+              ${this._config.flip_entity ? this.getFlipCards() : ''}
             </div>
           ` : ''}
         </div>
@@ -693,63 +1077,72 @@ class ThermostatCard extends HTMLElement {
       increaseBtn.addEventListener('click', () => this.handleTemperatureChange(this._config.step));
     }
 
-    // Nastavení flip display pokud je konfigurace
-    if (this._config.flip_entity) {
-      this.setupFlipDisplay();
-    }
-  }
-
-  setupFlipDisplay() {
-    if (!this._config.flip_entity || !this._hass) return;
-
-    // Počkej na inicializaci flip display elementu
-    requestAnimationFrame(() => {
-      const flipCard = this.shadowRoot.getElementById('flipDisplay');
-      if (!flipCard) return;
-
-      // Ověř, že entita existuje
+    // Inicializuj flip display value při prvním renderu
+    if (this._config.flip_entity && this._previousFlipValue === null) {
       const flipEntity = this._hass.states[this._config.flip_entity];
-      if (!flipEntity) {
-        console.warn(`Flip display entita nenalezena: ${this._config.flip_entity}`);
-        return;
+      if (flipEntity) {
+        this._previousFlipValue = parseFloat(flipEntity.state);
       }
-
-      // Zkontroluj, že flip card má metodu setConfig
-      if (typeof flipCard.setConfig !== 'function') {
-        console.warn('Flip display card není načtená nebo nepodporuje setConfig');
-        return;
-      }
-
-      try {
-        // Nastavení config pro flip display podle skutečné API
-        const flipConfig = {
-          entity: this._config.flip_entity,
-          digits_per_card: this._config.flip_digits_per_card,
-          number_of_cards: this._config.flip_number_of_cards,
-          hideBackground: this._config.flip_hide_background,
-          styles: {
-            fontSize: this._config.flip_font_size
-          }
-        };
-
-        flipCard.setConfig(flipConfig);
-        flipCard.hass = this._hass;
-      } catch (error) {
-        console.error('Chyba při nastavení flip display:', error);
-      }
-    });
+    }
   }
 
   updateFlipDisplay() {
     if (!this._config.flip_entity || !this._hass) return;
 
-    const flipCard = this.shadowRoot.getElementById('flipDisplay');
-    if (flipCard && typeof flipCard.hass !== 'undefined') {
-      try {
-        flipCard.hass = this._hass;
-      } catch (error) {
-        console.error('Chyba při aktualizaci flip display:', error);
+    const flipEntity = this._hass.states[this._config.flip_entity];
+    if (!flipEntity) return;
+
+    const currentValue = parseFloat(flipEntity.state);
+    if (isNaN(currentValue)) return;
+
+    // Zkontroluj jestli se hodnota změnila
+    if (this._previousFlipValue !== null && this._previousFlipValue !== currentValue) {
+      // Spusť flip animaci
+      this.triggerFlipAnimation(currentValue);
+    }
+
+    this._previousFlipValue = currentValue;
+  }
+
+  triggerFlipAnimation(newValue) {
+    const valueStr = newValue.toFixed(this._config.flip_decimal_places);
+    const digits = valueStr.replace('.', '').split('');
+    const digitsPerCard = this._config.flip_digits_per_card;
+    const numberOfCards = this._config.flip_number_of_cards;
+    const animDuration = this._config.flip_animation_duration;
+
+    for (let i = 0; i < numberOfCards; i++) {
+      const flipCard = this.shadowRoot.querySelector(`.flip-card[data-card="${i}"]`);
+      if (!flipCard) continue;
+
+      const startIdx = i * digitsPerCard;
+      const endIdx = startIdx + digitsPerCard;
+      const cardDigits = digits.slice(startIdx, endIdx);
+      const displayValue = cardDigits.join('') || '0';
+
+      // Ulož současnou hodnotu z front panelu
+      const frontElement = flipCard.querySelector('.flip-panel-front-text .flip-panel-text-wrapper span');
+      const currentValue = frontElement ? frontElement.textContent : '0';
+
+      // Pokud se hodnota nezměnila, přeskoč
+      if (currentValue === displayValue) continue;
+
+      // Nastav back panel na novou hodnotu (bude vidět po flipu)
+      const backElement = flipCard.querySelector('.flip-panel-back-text .flip-panel-text-wrapper span');
+      if (backElement) {
+        backElement.textContent = displayValue;
       }
+
+      // Spusť flip animaci
+      flipCard.classList.add('flipping');
+
+      // Po dokončení animace aktualizuj front panel a odstraň třídu
+      setTimeout(() => {
+        if (frontElement) {
+          frontElement.textContent = displayValue;
+        }
+        flipCard.classList.remove('flipping');
+      }, animDuration);
     }
   }
 
@@ -771,7 +1164,16 @@ class ThermostatCard extends HTMLElement {
       flip_digits_per_card: 1,
       flip_number_of_cards: 2,
       flip_hide_background: true,
-      flip_font_size: '3em',
+      flip_font_size: '2em',
+      flip_show_label: true,
+      flip_label_text: '',
+      flip_show_unit: true,
+      flip_unit: '',
+      flip_decimal_places: 1,
+      flip_animation_duration: 600,
+      flip_card_color: '#ffffff',
+      flip_background_color: '#333333',
+      flip_gap: 6,
       custom_colors: false,
       color_heating: '#ff6b6b',
       color_cooling: '#4facfe',
@@ -914,19 +1316,18 @@ class ThermostatCardEditor extends HTMLElement {
           <input type="number" id="step" min="0.1" max="2" step="0.1" value="${this._config.step || 0.5}"/>
         </div>
 
-        <div class="section-header">Flip Display Nastavení</div>
+        <div class="section-header">🔢 Flip Display</div>
 
         <div class="config-row">
-          <label for="flip_entity">Flip Display entita (volitelné)</label>
+          <label for="flip_entity">Entita pro zobrazení</label>
           <select id="flip_entity">
-            <option value="">Žádná</option>
+            <option value="">-- Žádná (vypnuto) --</option>
             ${allEntities.map(entityId => `
               <option value="${entityId}" ${this._config.flip_entity === entityId ? 'selected' : ''}>
                 ${this._hass.states[entityId].attributes.friendly_name || entityId}
               </option>
             `).join('')}
           </select>
-          <div class="helper-text">Entita pro flip display pod grafem</div>
         </div>
 
         <div class="config-row">
@@ -934,20 +1335,20 @@ class ThermostatCardEditor extends HTMLElement {
           <select id="flip_digits_per_card">
             <option value="1" ${this._config.flip_digits_per_card === 1 ? 'selected' : ''}>1 číslice</option>
             <option value="2" ${this._config.flip_digits_per_card === 2 ? 'selected' : ''}>2 číslice</option>
+            <option value="3" ${this._config.flip_digits_per_card === 3 ? 'selected' : ''}>3 číslice</option>
           </select>
-          <div class="helper-text">Počet číslic na jedné kartě (1 nebo 2)</div>
         </div>
 
         <div class="config-row">
           <label for="flip_number_of_cards">Počet karet</label>
-          <input type="number" id="flip_number_of_cards" min="1" max="99" value="${this._config.flip_number_of_cards !== undefined ? this._config.flip_number_of_cards : 2}"/>
+          <input type="number" id="flip_number_of_cards" min="1" max="99" value="${this._config.flip_number_of_cards || 2}"/>
           <div class="helper-text">Celkový počet karet (1-99)</div>
         </div>
 
         <div class="config-row">
           <label for="flip_font_size">Velikost písma</label>
-          <input type="text" id="flip_font_size" placeholder="např. 3em nebo 48px" value="${this._config.flip_font_size || '3em'}"/>
-          <div class="helper-text">CSS hodnota velikosti (např. 3em, 48px)</div>
+          <input type="text" id="flip_font_size" placeholder="např. 2em nebo 32px" value="${this._config.flip_font_size || '2em'}"/>
+          <div class="helper-text">CSS hodnota velikosti (např. 2em, 32px)</div>
         </div>
 
         <div class="config-row">
@@ -955,6 +1356,65 @@ class ThermostatCardEditor extends HTMLElement {
             <input type="checkbox" id="flip_hide_background" ${this._config.flip_hide_background !== false ? 'checked' : ''}/>
             <label for="flip_hide_background">Skrýt pozadí</label>
           </div>
+        </div>
+
+        <div class="section-header">🏷️ Popisky a jednotky</div>
+
+        <div class="config-row">
+          <div class="checkbox-row">
+            <input type="checkbox" id="flip_show_label" ${this._config.flip_show_label !== false ? 'checked' : ''}/>
+            <label for="flip_show_label">Zobrazit popisek</label>
+          </div>
+        </div>
+
+        <div class="config-row">
+          <label for="flip_label_text">Vlastní popisek (volitelné)</label>
+          <input type="text" id="flip_label_text" placeholder="automaticky z entity" value="${this._config.flip_label_text || ''}"/>
+          <div class="helper-text">Ponechte prázdné pro automatickou detekci</div>
+        </div>
+
+        <div class="config-row">
+          <div class="checkbox-row">
+            <input type="checkbox" id="flip_show_unit" ${this._config.flip_show_unit !== false ? 'checked' : ''}/>
+            <label for="flip_show_unit">Zobrazit jednotku</label>
+          </div>
+        </div>
+
+        <div class="config-row">
+          <label for="flip_unit">Vlastní jednotka (volitelné)</label>
+          <input type="text" id="flip_unit" placeholder="automaticky z entity" value="${this._config.flip_unit || ''}"/>
+          <div class="helper-text">Ponechte prázdné pro automatickou detekci (např. °C)</div>
+        </div>
+
+        <div class="section-header">⚙️ Pokročilé nastavení</div>
+
+        <div class="config-row">
+          <label for="flip_decimal_places">Počet desetinných míst</label>
+          <input type="number" id="flip_decimal_places" min="0" max="3" value="${this._config.flip_decimal_places !== undefined ? this._config.flip_decimal_places : 1}"/>
+          <div class="helper-text">Kolik desetinných míst zobrazit (0-3)</div>
+        </div>
+
+        <div class="config-row">
+          <label for="flip_animation_duration">Délka animace (ms)</label>
+          <input type="number" id="flip_animation_duration" min="200" max="2000" step="100" value="${this._config.flip_animation_duration || 600}"/>
+          <div class="helper-text">Rychlost flip animace v milisekundách (200-2000)</div>
+        </div>
+
+        <div class="config-row">
+          <label for="flip_gap">Mezera mezi kartami (px)</label>
+          <input type="number" id="flip_gap" min="0" max="20" value="${this._config.flip_gap || 6}"/>
+          <div class="helper-text">Velikost mezery mezi flip kartami (0-20)</div>
+        </div>
+
+        <div class="config-row">
+          <label for="flip_card_color">Barva textu</label>
+          <input type="color" id="flip_card_color" value="${this._config.flip_card_color || '#ffffff'}"/>
+        </div>
+
+        <div class="config-row">
+          <label for="flip_background_color">Barva pozadí karty</label>
+          <input type="text" id="flip_background_color" placeholder="#333333" value="${this._config.flip_background_color || '#333333'}"/>
+          <div class="helper-text">CSS barva (hex, rgb, rgba)</div>
         </div>
 
         <div class="section-header">Vlastní Barvy</div>
@@ -1002,6 +1462,15 @@ class ThermostatCardEditor extends HTMLElement {
     const flipNumberOfCardsInput = this.shadowRoot.getElementById('flip_number_of_cards');
     const flipFontSizeInput = this.shadowRoot.getElementById('flip_font_size');
     const flipHideBackgroundCheckbox = this.shadowRoot.getElementById('flip_hide_background');
+    const flipShowLabelCheckbox = this.shadowRoot.getElementById('flip_show_label');
+    const flipLabelTextInput = this.shadowRoot.getElementById('flip_label_text');
+    const flipShowUnitCheckbox = this.shadowRoot.getElementById('flip_show_unit');
+    const flipUnitInput = this.shadowRoot.getElementById('flip_unit');
+    const flipDecimalPlacesInput = this.shadowRoot.getElementById('flip_decimal_places');
+    const flipAnimationDurationInput = this.shadowRoot.getElementById('flip_animation_duration');
+    const flipGapInput = this.shadowRoot.getElementById('flip_gap');
+    const flipCardColorInput = this.shadowRoot.getElementById('flip_card_color');
+    const flipBackgroundColorInput = this.shadowRoot.getElementById('flip_background_color');
     const customColorsCheckbox = this.shadowRoot.getElementById('custom_colors');
     const colorHeatingInput = this.shadowRoot.getElementById('color_heating');
     const colorCoolingInput = this.shadowRoot.getElementById('color_cooling');
@@ -1046,6 +1515,42 @@ class ThermostatCardEditor extends HTMLElement {
 
     flipHideBackgroundCheckbox?.addEventListener('change', (e) => {
       this.configChanged({ ...this._config, flip_hide_background: e.target.checked });
+    });
+
+    flipShowLabelCheckbox?.addEventListener('change', (e) => {
+      this.configChanged({ ...this._config, flip_show_label: e.target.checked });
+    });
+
+    flipLabelTextInput?.addEventListener('input', (e) => {
+      this.configChanged({ ...this._config, flip_label_text: e.target.value });
+    });
+
+    flipShowUnitCheckbox?.addEventListener('change', (e) => {
+      this.configChanged({ ...this._config, flip_show_unit: e.target.checked });
+    });
+
+    flipUnitInput?.addEventListener('input', (e) => {
+      this.configChanged({ ...this._config, flip_unit: e.target.value });
+    });
+
+    flipDecimalPlacesInput?.addEventListener('input', (e) => {
+      this.configChanged({ ...this._config, flip_decimal_places: parseInt(e.target.value) });
+    });
+
+    flipAnimationDurationInput?.addEventListener('input', (e) => {
+      this.configChanged({ ...this._config, flip_animation_duration: parseInt(e.target.value) });
+    });
+
+    flipGapInput?.addEventListener('input', (e) => {
+      this.configChanged({ ...this._config, flip_gap: parseInt(e.target.value) });
+    });
+
+    flipCardColorInput?.addEventListener('input', (e) => {
+      this.configChanged({ ...this._config, flip_card_color: e.target.value });
+    });
+
+    flipBackgroundColorInput?.addEventListener('input', (e) => {
+      this.configChanged({ ...this._config, flip_background_color: e.target.value });
     });
 
     customColorsCheckbox?.addEventListener('change', (e) => {
@@ -1096,12 +1601,12 @@ window.customCards = window.customCards || [];
 window.customCards.push({
   type: 'thermostat-card',
   name: 'Thermostat Control Card',
-  description: 'Kompaktní termostat inspirovaný Nest - praktický pro dashboard',
+  description: 'Kompaktní termostat s profesionálním Flip Display',
   preview: true
 });
 
 console.info(
-  '%c THERMOSTAT-CARD %c v2.1.0 ',
+  '%c THERMOSTAT-CARD %c v3.0.0 🎊 ',
   'color: white; background: #10b981; font-weight: 700;',
   'color: #10b981; background: white; font-weight: 700;'
 );
