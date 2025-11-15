@@ -128,12 +128,13 @@ class ThermostatCard extends HTMLElement {
     if (history.length === 0) return;
 
     const entity = this._hass.states[this._config.entity];
-    const state = entity ? entity.state : 'off';
-    const colors = this.getStateColors(state);
+    const colors = this.getStateColors(entity);
+    const t = this.getTranslations();
+    const lang = this._hass?.language || this._hass?.locale?.language || 'en';
 
     // Pokud graf už existuje, pouze updateuj data (prevence blikání)
     if (this._chartInstance) {
-      this._chartInstance.data.labels = history.map(d => d.time.toLocaleTimeString('cs-CZ', {
+      this._chartInstance.data.labels = history.map(d => d.time.toLocaleTimeString(lang === 'cs' ? 'cs-CZ' : 'en-US', {
         hour: '2-digit',
         minute: '2-digit'
       }));
