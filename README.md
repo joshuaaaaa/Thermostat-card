@@ -1,52 +1,63 @@
-# 🌡️ Thermostat Control Card pro Home Assistant
+# 🌡️ Thermostat Control Card for Home Assistant
 
-Kompaktní a přehledná karta pro ovládání termostatů s designem inspirovaným Google Nest - ideální pro dashboardy.
+**[🇨🇿 Česká verze](README.cs.md)** | **[🇬🇧 English (current)]**
 
-![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)
+Compact and elegant thermostat control card with Google Nest-inspired design - perfect for dashboards.
+
+![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)
 ![HACS](https://img.shields.io/badge/HACS-compatible-success.svg)
 ![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2024.1+-blue.svg)
 ![Design](https://img.shields.io/badge/Design-Nest%20Inspired-orange.svg)
 
-## ✨ Funkce
+## ✨ Features
 
-**🎨 Kompaktní Design**
-- **Nest-inspirovaný layout** - cirkulární progress ring s velkou teplotou
-- **Dashboard-friendly** - kompaktní rozložení ideální pro přehledné dashboardy
-- **Barevné pozadí** - jemné gradienty mění barvu podle stavu (heating/cooling/idle/off)
-- **Status chip** - barevný indikátor stavu s ikonou
+**🎨 Compact Design**
+- **Nest-inspired layout** - circular progress ring with large temperature display
+- **Dashboard-friendly** - compact layout ideal for clean dashboards
+- **Color-coded backgrounds** - subtle gradients change color based on state
+- **Status chip** - colored state indicator with icon
 
-**🌡️ Ovládání**
-- **Cirkulární displej** - velké zobrazení aktuální teploty (150px kruh)
-- **Progress ring** - vizuální indikace teploty v rozsahu min-max
-- **Intuitivní tlačítka +/-** - rychlá změna teploty s haptic feedback
-- **Cílová teplota** - zobrazená pod hlavní teplotou
+**🌡️ Controls**
+- **Circular display** - large current temperature display (120px circle)
+- **Progress ring** - visual temperature indication within min-max range
+- **Intuitive +/- buttons** - quick temperature adjustment with haptic feedback
+- **Target temperature** - displayed below main temperature
 
-**📊 Pokročilé funkce**
-- **Historický graf** - Chart.js graf vedle kruhu (konfigurovatelné 1-48h)
-- **Bez blikání** - optimalizovaná aktualizace grafu bez rerenderu
-- **Flip Display integrace** - volitelné připojení flip-display-card pro zobrazení hodnot
-- **Real-time aktualizace** - okamžitá reakce na změny
-- **Plně responzivní** - adaptivní layout pro mobil i desktop
+**📊 Advanced Features**
+- **Historical graph** - Chart.js graph next to the circle (configurable 1-48h)
+- **Flicker-free** - optimized graph updates without re-rendering
+- **🎴 Professional Flip Display** - built-in animated flip cards (inspired by @pqina/flip)
+- **Real-time updates** - instant response to changes
+- **Fully responsive** - adaptive layout for mobile and desktop
+- **State-based coloring** - uses `hvac_action` for accurate state representation
 
-## 📦 Instalace
+**🎴 Professional Flip Display (NEW in v3.0.0)**
+- **Built-in flip animation** - no external dependencies required
+- **3D flip effect** - realistic panel rotation with shadows
+- **Fully customizable** - colors, fonts, spacing, animation speed
+- **Auto-detection** - automatically detects unit and label from entity
+- **Smooth animations** - configurable duration (200-2000ms)
+- **Multiple card layouts** - 1-3 digits per card, up to 99 cards
 
-### Přes HACS (doporučeno)
+## 📦 Installation
 
-1. Otevřete HACS v Home Assistant
-2. Klikněte na **Frontend**
-3. Klikněte na menu (tři tečky) vpravo nahoře
-4. Vyberte **Custom repositories**
-5. Přidejte URL tohoto repozitáře
-6. Kategorie: **Lovelace**
-7. Klikněte **Add**
-8. Najděte "Thermostat Control Card" a klikněte **Download**
-9. Restartujte Home Assistant
+### Via HACS (Recommended)
 
-### Manuální instalace
+1. Open HACS in Home Assistant
+2. Click on **Frontend**
+3. Click the menu (three dots) in the top right
+4. Select **Custom repositories**
+5. Add this repository URL
+6. Category: **Lovelace**
+7. Click **Add**
+8. Find "Thermostat Control Card" and click **Download**
+9. Restart Home Assistant
 
-1. Stáhněte `thermostat-card.js`
-2. Zkopírujte do složky `config/www/thermostat-card/`
-3. Přidejte do `configuration.yaml`:
+### Manual Installation
+
+1. Download `thermostat-card.js`
+2. Copy to `config/www/thermostat-card/`
+3. Add to `configuration.yaml`:
 
 ```yaml
 lovelace:
@@ -55,139 +66,227 @@ lovelace:
       type: module
 ```
 
-4. Restartujte Home Assistant
+4. Restart Home Assistant
 
-## 🎨 Použití
+## 🎨 Usage
 
-### Základní konfigurace
+### Basic Configuration
 
 ```yaml
 type: custom:thermostat-card
 entity: climate.living_room
 ```
 
-### Pokročilá konfigurace
+### Advanced Configuration
 
 ```yaml
 type: custom:thermostat-card
 entity: climate.bedroom
-name: Ložnice
+name: Bedroom
 show_graph: true
 graph_hours: 24
 step: 0.5
-flip_entity: sensor.bedroom_humidity  # volitelné
-flip_digits_per_card: 1  # 1 nebo 2 číslice na kartu
-flip_number_of_cards: 2  # celkový počet karet
-flip_font_size: '3em'    # velikost písma
-flip_hide_background: true
+
+# Built-in Flip Display (no external card needed!)
+flip_entity: sensor.bedroom_humidity
+flip_show_label: true
+flip_show_unit: true
+flip_decimal_places: 1
+flip_animation_duration: 600
+flip_font_size: '2em'
 ```
 
-## ⚙️ Konfigurační parametry
+### Full Configuration Example
 
-### Základní nastavení
+```yaml
+type: custom:thermostat-card
+entity: climate.living_room
+name: Living Room
+show_graph: true
+graph_hours: 12
+step: 0.5
 
-| Parametr | Typ | Výchozí | Popis |
-|----------|-----|---------|-------|
-| `entity` | string | **povinné** | ID climate entity (např. `climate.thermostat`) |
-| `name` | string | název entity | Vlastní název zobrazený na kartě |
-| `show_graph` | boolean | `true` | Zobrazit historický graf teploty |
-| `graph_hours` | number | `12` | Počet hodin zobrazených v grafu (1-48) |
-| `step` | number | `0.5` | Krok pro změnu teploty tlačítky |
+# Flip Display Configuration
+flip_entity: sensor.living_room_humidity
+flip_digits_per_card: 1              # 1-3 digits per card
+flip_number_of_cards: 2              # Total number of cards
+flip_font_size: '2em'                # Font size (CSS value)
+flip_hide_background: true           # Hide card background
+flip_show_label: true                # Show label above
+flip_label_text: ''                  # Custom label (auto-detect if empty)
+flip_show_unit: true                 # Show unit after value
+flip_unit: ''                        # Custom unit (auto-detect if empty)
+flip_decimal_places: 1               # Decimal places (0-3)
+flip_animation_duration: 600         # Animation speed in ms (200-2000)
+flip_card_color: '#ffffff'           # Text color
+flip_background_color: '#333333'     # Card background color
+flip_gap: 6                          # Gap between cards in px (0-20)
 
-### Flip Display nastavení
+# Custom Colors (optional)
+custom_colors: true
+color_heating: '#FF6B6B'
+color_cooling: '#4FACFE'
+color_idle: '#10B981'
+color_off: '#6B7280'
+```
 
-| Parametr | Typ | Výchozí | Popis |
-|----------|-----|---------|-------|
-| `flip_entity` | string | `''` | Entita pro flip-display-card pod grafem (volitelné) |
-| `flip_digits_per_card` | number | `1` | Počet číslic na jedné kartě (1 nebo 2) |
-| `flip_number_of_cards` | number | `2` | Celkový počet karet (1-99) |
-| `flip_font_size` | string | `'3em'` | Velikost písma (CSS hodnota, např. '3em', '48px') |
-| `flip_hide_background` | boolean | `true` | Skrýt pozadí flip display |
+## ⚙️ Configuration Parameters
 
-## 📸 Vzhled karty
+### Basic Settings
 
-Karta zobrazuje:
-- **Kompaktní layout** - kruh vlevo, graf vpravo
-- **Cirkulární displej** - velké číslo aktuální teploty uprostřed kruhu (150px)
-- **Animovaný progress ring** - vizuální indikace teploty v rozsahu min-max
-- **Cílová teplota** - zobrazená pod hlavní teplotou
-- **Status chip** - barevný indikátor stavu s ikonou (🔥 Topení, ❄️ Chlazení, ✓ Připraveno, ○ Vypnuto)
-- **Ovládací tlačítka +/-** - cirkulární tlačítka pro změnu teploty
-- **Barevné pozadí** - jemný gradient mění se podle stavu
-- **Historický graf** - Chart.js vedle kruhu s hoverable tooltip
-- **Flip Display** - volitelné zobrazení hodnot pod grafem (vyžaduje flip-display-card)
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `entity` | string | **required** | Climate entity ID (e.g., `climate.thermostat`) |
+| `name` | string | entity name | Custom name displayed on card |
+| `show_graph` | boolean | `true` | Show historical temperature graph |
+| `graph_hours` | number | `12` | Hours of history in graph (1-48) |
+| `step` | number | `0.5` | Temperature change step for buttons |
 
-## 🎨 Design Vlastnosti
+### Built-in Flip Display Settings
 
-Karta je navržená s důrazem na kompaktnost a přehlednost:
+**No external card required!** The flip display is built directly into the thermostat card.
 
-**Nest-inspirovaný cirkulární displej**
-- 150px SVG progress ring s plynulou animací
-- Velké čitelné číslo uprostřed (48px font)
-- Barevný ring mění se podle stavu
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `flip_entity` | string | `''` | Entity to display in flip cards (optional) |
+| `flip_digits_per_card` | number | `1` | Number of digits per card (1-3) |
+| `flip_number_of_cards` | number | `2` | Total number of cards (1-99) |
+| `flip_font_size` | string | `'2em'` | Font size (CSS value, e.g., '2em', '32px') |
+| `flip_hide_background` | boolean | `true` | Hide card background for transparency |
+
+### Labels and Units
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `flip_show_label` | boolean | `true` | Show label above flip cards |
+| `flip_label_text` | string | `''` | Custom label (auto-detect from entity if empty) |
+| `flip_show_unit` | boolean | `true` | Show unit after value |
+| `flip_unit` | string | `''` | Custom unit (auto-detect from entity if empty) |
+
+### Advanced Flip Display Settings
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `flip_decimal_places` | number | `1` | Number of decimal places to display (0-3) |
+| `flip_animation_duration` | number | `600` | Animation speed in milliseconds (200-2000) |
+| `flip_gap` | number | `6` | Gap between cards in pixels (0-20) |
+| `flip_card_color` | string | `'#ffffff'` | Text color on flip cards |
+| `flip_background_color` | string | `'#333333'` | Background color of flip cards |
+
+### Custom Colors (Optional)
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `custom_colors` | boolean | `false` | Enable custom color scheme |
+| `color_heating` | string | `'#ff6b6b'` | Color when actively heating |
+| `color_cooling` | string | `'#4facfe'` | Color when actively cooling |
+| `color_idle` | string | `'#10b981'` | Color when ready but not heating/cooling |
+| `color_off` | string | `'#6b7280'` | Color when thermostat is off |
+
+## 📸 Card Appearance
+
+The card displays:
+- **Compact layout** - circle on the left, graph on the right
+- **Circular display** - large current temperature in center of circle (120px)
+- **Animated progress ring** - visual temperature indication within min-max range
+- **Target temperature** - shown below main temperature with decimal precision
+- **Status chip** - colored state indicator with icon (🔥 Heating, ❄️ Cooling, ✓ Ready, ○ Off)
+- **Control buttons +/-** - circular buttons for temperature adjustment
+- **Color-coded background** - subtle gradient changes based on actual state
+- **Historical graph** - Chart.js graph next to circle with hoverable tooltip
+- **Professional Flip Display** - optional animated flip cards below graph
+
+## 🎨 Design Features
+
+**Nest-Inspired Circular Display**
+- 120px SVG progress ring with smooth animation
+- Large readable temperature (36px font with decimal precision)
+- Color-changing ring based on state
 - Smooth transitions (0.6s ease)
 
-**Barevné schéma podle stavu**
-Karta mění pozadí a barvy podle stavu termostatu:
-- 🔥 **Heating** (Topení): Teplé červené tóny `#ff6b6b` na světle růžovém gradientu
-- ❄️ **Cooling** (Chlazení): Chladné modré tóny `#4facfe` na světle modrém gradientu
-- ✓ **Idle** (Připraveno): Zelené tóny `#10b981` na světle zeleném gradientu
-- ○ **Off** (Vypnuto): Neutrální šedá `#6b7280` na světle šedém gradientu
+**State-Based Color Scheme**
+The card changes background and colors based on **actual thermostat state** (`hvac_action`):
+- 🔥 **Heating**: Warm red tones `#ff6b6b` on light red gradient (only when **actively heating**)
+- ❄️ **Cooling**: Cool blue tones `#4facfe` on light blue gradient (only when **actively cooling**)
+- ✓ **Idle**: Green tones `#10b981` on light green gradient (ready but not heating/cooling)
+- ○ **Off**: Neutral gray `#6b7280` on light gray gradient
 
-**Kompaktní layout**
-- Grid rozložení: kruh (180px) vlevo, graf vpravo
-- Responzivní - na mobilu stack vertikálně
-- Bílé pozadí grafů pro lepší čitelnost
-- Optimalizované pro dashboardy
+**🎴 Professional Flip Display (v3.0.0)**
+- **No dependencies** - built-in implementation inspired by @pqina/flip
+- **Realistic 3D effect** - 51% panel height for accurate flip animation
+- **Dual shadow layers** - top and bottom shadows for depth
+- **Shadow pulse** - animated shadow during flip
+- **Gradient overlays** - matching @pqina/flip specification
+- **Auto-detection** - automatically reads unit and label from entity
+- **Highly customizable** - colors, fonts, spacing, animation speed
 
-**Optimalizace výkonu**
-- Graf se neobnovuje celý, pouze updateuje data (bez blikání)
-- Animace vypnuté pro rychlejší render
-- requestAnimationFrame pro flip display inicializaci
-- Lazy loading Chart.js knihovny
+**Compact Layout**
+- Grid layout: circle (160px) on left, graph on right
+- Responsive - vertical stack on mobile
+- White background for graphs for better readability
+- Optimized for dashboards
 
-## 🆕 Novinky ve verzi 2.1.0
+**Performance Optimization**
+- Graph only updates data, not full re-render (no flickering)
+- Animations disabled for faster rendering
+- Efficient flip animation triggering only on value change
+- Lazy loading of Chart.js library
 
-- ✨ **Kompletní redesign** - nový kompaktní layout ideální pro dashboardy
-- 📊 **Graf vedle kruhu** - grid rozložení místo vertikálního stacku
-- 🔄 **Eliminace blikání** - graf se už neobnovuje celý, pouze updateuje data
-- 🎴 **Flip Display integrace** - volitelné zobrazení hodnot pod grafem
-- ⚙️ **Kompletní flip display konfigurace** - digits, decimal places, duration, hide background
-- 🛡️ **Error handling** - robustní zpracování chyb při inicializaci flip display
-- 🎨 **Jemnější design** - světlé pozadí s barevnými gradienty
-- 📱 **Lepší responzivita** - vylepšený mobilní layout
-- 🖥️ **Vizuální editor** - přehledný konfigurátor s validací a helper texty
+## 🆕 What's New in v3.0.0
 
-## 🛠️ Kompatibilita
+- 🎴 **Professional Flip Display** - built-in animated flip cards (no external dependencies!)
+- 🎯 **Precise 3D Animation** - realistic flip effect inspired by @pqina/flip
+- 🎨 **Fully Customizable Flip Cards** - 11 new configuration parameters
+- 🏷️ **Auto-Detection** - automatically detects unit and label from entity
+- 📐 **Decimal Precision** - shows actual temperature with decimal (21.5°C instead of 22°C)
+- 🎯 **Accurate State Colors** - uses `hvac_action` instead of `hvac_mode` for true state representation
+- 📏 **Compact Size** - optimized card dimensions for better dashboard fit
+- ⚡ **Smooth Animations** - configurable flip duration (200-2000ms)
+- 🌈 **Custom Gradients** - dual-color gradients for each state
+- 🔧 **Enhanced Editor** - organized sections with helper texts
 
-- Home Assistant 2024.1 nebo novější
-- Všechny standardní climate entity
-- Funguje s většinou termostatů (TRV, smart thermostats, atd.)
-- Volitelná integrace s flip-display-card pro zobrazení hodnot
+## 🛠️ Compatibility
 
-## 📝 Poznámky
+- Home Assistant 2024.1 or newer
+- All standard climate entities
+- Works with most thermostats (TRV, smart thermostats, etc.)
+- **Flip display built-in** - no external dependencies required
 
-- Graf zobrazuje historii aktuální i cílové teploty
-- Karta automaticky detekuje stav termostatu (heating/cooling/idle/off)
-- Minimální a maximální teplota se načítá z entity
-- Pro flip display funkci je potřeba mít nainstalovanou [flip-display-card](https://github.com/your-repo/flip-display-card)
-- Graf neobnovuje celý element při update - eliminuje blikání
-- Flip display element se inicializuje asynchronně s error handlingem
+## 📝 Important Notes
 
-## 🐛 Hlášení problémů
+**Flip Display**
+- The flip display is **built directly into the card** - no separate flip-display-card installation needed
+- Automatically detects `unit_of_measurement` and `friendly_name` from the entity
+- Supports any numeric sensor entity (temperature, humidity, power, etc.)
+- Animation triggers only when value changes (efficient)
 
-Pokud najdete chybu nebo máte návrh na vylepšení, vytvořte prosím issue na GitHubu.
+**State Detection**
+- Uses `hvac_action` attribute for accurate state representation
+- Shows heating colors **only when actively heating** (not just in heat mode)
+- Shows cooling colors **only when actively cooling** (not just in cool mode)
+- Fallback to `off` color when thermostat is turned off
 
-## 📄 Licence
+**Graph**
+- Displays both current and target temperature history
+- Minimal y-axis for better space utilization
+- No full element refresh on update - eliminates flickering
+- Automatic color matching to current state
 
-MIT License - použijte a upravujte podle potřeby!
+## 🐛 Bug Reports
 
-## 👏 Poděkování
+If you find a bug or have a suggestion for improvement, please create an issue on GitHub.
 
-Inspirováno Google Nest termostatem a komunitou Home Assistant.
+## 📄 License
+
+MIT License - use and modify as needed!
+
+## 👏 Acknowledgments
+
+Inspired by Google Nest thermostat and the Home Assistant community.
+Special thanks to @pqina/flip for the flip animation inspiration.
 
 ---
 
-**v2.1.0** - Kompletní redesign pro lepší použitelnost na dashboardech 🎨
+**v3.0.0** - Professional Flip Display Implementation 🎴
 
-*Poslední aktualizace: Listopad 2025*
+*Last updated: November 2025*
