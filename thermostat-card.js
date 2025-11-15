@@ -238,7 +238,7 @@ class ThermostatCard extends HTMLElement {
     });
   }
 
-  getStateColors(state) {
+  getStateColors(entity) {
     const hexToRgb = (hex) => {
       const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
       return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '0, 0, 0';
@@ -263,18 +263,28 @@ class ThermostatCard extends HTMLElement {
       off: { color: this._config.custom_colors ? this._config.color_off : '#6b7280', icon: '○', label: 'Vypnuto' }
     };
 
-    // Normalizuj stav - Home Assistant může vracet různé hodnoty
-    const normalizedState = state?.toLowerCase();
-
-    // Mapování různých stavů na naše kategorie
-    if (normalizedState === 'heat' || normalizedState === 'heating') {
-      return createColorScheme(baseColors.heating.color, baseColors.heating.icon, baseColors.heating.label);
-    } else if (normalizedState === 'cool' || normalizedState === 'cooling') {
-      return createColorScheme(baseColors.cooling.color, baseColors.cooling.icon, baseColors.cooling.label);
-    } else if (normalizedState === 'idle' || normalizedState === 'auto' || normalizedState === 'heat_cool' || normalizedState === 'dry' || normalizedState === 'fan_only') {
-      return createColorScheme(baseColors.idle.color, baseColors.idle.icon, baseColors.idle.label);
-    } else {
+    // Pokud není entita, vrať výchozí barvu
+    if (!entity) {
       return createColorScheme(baseColors.off.color, baseColors.off.icon, baseColors.off.label);
+    }
+
+    // Použij hvac_action pro skutečný stav (heating/cooling/idle)
+    const hvacAction = entity.attributes?.hvac_action?.toLowerCase();
+    const hvacMode = entity.state?.toLowerCase();
+
+    // Prioritně použij hvac_action (skutečný stav topení/chlazení)
+    if (hvacAction === 'heating') {
+      return createColorScheme(baseColors.heating.color, baseColors.heating.icon, baseColors.heating.label);
+    } else if (hvacAction === 'cooling') {
+      return createColorScheme(baseColors.cooling.color, baseColors.cooling.icon, baseColors.cooling.label);
+    } else if (hvacAction === 'idle') {
+      return createColorScheme(baseColors.idle.color, baseColors.idle.icon, baseColors.idle.label);
+    } else if (hvacMode === 'off') {
+      // Když je vypnuto, použij barvu off
+      return createColorScheme(baseColors.off.color, baseColors.off.icon, baseColors.off.label);
+    } else {
+      // Fallback - když není hvac_action ale je zapnuto, zobraz jako připraveno
+      return createColorScheme(baseColors.idle.color, baseColors.idle.icon, baseColors.idle.label);
     }
   }
 
@@ -472,7 +482,7 @@ class ThermostatCard extends HTMLElement {
     const maxTemp = entity.attributes.max_temp || 35;
     const state = entity.state;
     const name = this._config.name || entity.attributes.friendly_name || 'Termostat';
-    const colors = this.getStateColors(state);
+    const colors = this.getStateColors(entity);
 
     const progress = this.calculateProgress(currentTemp, minTemp, maxTemp);
     const targetProgress = this.calculateProgress(targetTemp, minTemp, maxTemp);
