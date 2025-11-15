@@ -549,13 +549,40 @@ class ThermostatCard extends HTMLElement {
         .thermostat-card {
           background: ${colors.bg};
           border-radius: 12px;
-          padding: clamp(8px, 2vw, 12px);
+          padding: 12px;
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
           transition: background 0.4s ease;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
           container-type: inline-size;
           max-width: 100%;
-          overflow: hidden;
+        }
+
+        .card-content {
+          transition: zoom 0.3s ease;
+        }
+
+        @container (max-width: 420px) {
+          .card-content {
+            zoom: 0.9;
+          }
+        }
+
+        @container (max-width: 350px) {
+          .card-content {
+            zoom: 0.8;
+          }
+        }
+
+        @container (max-width: 280px) {
+          .card-content {
+            zoom: 0.7;
+          }
+        }
+
+        @container (max-width: 220px) {
+          .card-content {
+            zoom: 0.6;
+          }
         }
 
         .card-header {
@@ -566,7 +593,7 @@ class ThermostatCard extends HTMLElement {
         }
 
         .entity-name {
-          font-size: clamp(11px, 2.5vw, 13px);
+          font-size: 13px;
           font-weight: 600;
           color: #1f2937;
         }
@@ -575,10 +602,10 @@ class ThermostatCard extends HTMLElement {
           display: inline-flex;
           align-items: center;
           gap: 3px;
-          padding: clamp(2px, 0.5vw, 3px) clamp(6px, 1.5vw, 8px);
+          padding: 3px 8px;
           background: ${colors.primary};
           border-radius: 10px;
-          font-size: clamp(8px, 2vw, 10px);
+          font-size: 10px;
           font-weight: 600;
           color: white;
           text-transform: uppercase;
@@ -588,51 +615,27 @@ class ThermostatCard extends HTMLElement {
         }
 
         .status-icon {
-          font-size: clamp(8px, 2vw, 10px);
+          font-size: 10px;
         }
 
         .main-content {
           display: grid;
-          grid-template-columns: ${this._config.show_graph ? 'minmax(120px, 160px) 1fr' : '1fr'};
-          gap: clamp(8px, 2vw, 12px);
+          grid-template-columns: ${this._config.show_graph ? '160px 1fr' : '1fr'};
+          gap: 12px;
           align-items: center;
-        }
-
-        @container (max-width: 350px) {
-          .main-content {
-            grid-template-columns: 1fr !important;
-          }
-        }
-
-        @container (max-width: 250px) {
-          .main-content {
-            gap: 6px;
-          }
         }
 
         .thermostat-display {
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: clamp(6px, 1.5vw, 8px);
+          gap: 8px;
         }
 
         .circle-container {
           position: relative;
-          width: min(120px, 100%);
-          height: min(120px, 100%);
-          max-width: 120px;
-          max-height: 120px;
-          aspect-ratio: 1 / 1;
-        }
-
-        @container (max-width: 250px) {
-          .circle-container {
-            width: min(100px, 100%);
-            height: min(100px, 100%);
-            max-width: 100px;
-            max-height: 100px;
-          }
+          width: 120px;
+          height: 120px;
         }
 
         .progress-ring {
@@ -676,28 +679,22 @@ class ThermostatCard extends HTMLElement {
         }
 
         .current-temp-value {
-          font-size: clamp(24px, 8vw, 36px);
+          font-size: 36px;
           font-weight: 700;
           color: ${colors.primary};
           line-height: 1;
           transition: color 0.4s ease;
         }
 
-        @container (max-width: 250px) {
-          .current-temp-value {
-            font-size: clamp(20px, 7vw, 28px);
-          }
-        }
-
         .temp-unit {
-          font-size: clamp(12px, 3vw, 16px);
+          font-size: 16px;
           opacity: 0.5;
           margin-left: 2px;
         }
 
         .target-temp {
           margin-top: 2px;
-          font-size: clamp(9px, 2vw, 11px);
+          font-size: 11px;
           color: #6b7280;
         }
 
@@ -708,18 +705,18 @@ class ThermostatCard extends HTMLElement {
 
         .controls {
           display: flex;
-          gap: clamp(6px, 1.5vw, 8px);
+          gap: 8px;
           justify-content: center;
         }
 
         .control-btn {
-          width: clamp(30px, 8vw, 36px);
-          height: clamp(30px, 8vw, 36px);
+          width: 36px;
+          height: 36px;
           border-radius: 50%;
           background: white;
           border: 2px solid ${colors.primary};
           color: ${colors.primary};
-          font-size: clamp(14px, 4vw, 18px);
+          font-size: 18px;
           font-weight: 600;
           cursor: pointer;
           display: flex;
@@ -753,13 +750,13 @@ class ThermostatCard extends HTMLElement {
         }
 
         .graph-title {
-          font-size: clamp(10px, 2.2vw, 12px);
+          font-size: 12px;
           font-weight: 600;
           color: #6b7280;
         }
 
         .graph-period {
-          font-size: clamp(9px, 2vw, 11px);
+          font-size: 11px;
           color: #9ca3af;
         }
 
@@ -767,15 +764,8 @@ class ThermostatCard extends HTMLElement {
           background: white;
           border-radius: 10px;
           padding: 10px;
-          height: ${this._config.flip_entity ? 'clamp(70px, 15vh, 90px)' : 'clamp(90px, 20vh, 110px)'};
+          height: ${this._config.flip_entity ? '90px' : '110px'};
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-        }
-
-        @container (max-width: 350px) {
-          .graph-container {
-            height: ${this._config.flip_entity ? 'clamp(60px, 12vh, 80px)' : 'clamp(70px, 15vh, 90px)'} !important;
-            padding: 8px;
-          }
         }
 
         #temperatureChart {
@@ -794,20 +784,20 @@ class ThermostatCard extends HTMLElement {
         .flip-display-container {
           background: white;
           border-radius: 8px;
-          padding: clamp(6px, 2vw, 10px) clamp(8px, 2.5vw, 12px);
+          padding: 10px 12px;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: clamp(4px, 1.5vw, 8px);
+          gap: 8px;
           margin-top: 6px;
-          min-height: clamp(40px, 10vw, 50px);
+          min-height: 50px;
           overflow: visible;
           width: 100%;
         }
 
         .flip-label {
-          font-size: clamp(9px, 2vw, 11px);
+          font-size: 11px;
           font-weight: 600;
           color: #6b7280;
           text-transform: uppercase;
@@ -819,20 +809,13 @@ class ThermostatCard extends HTMLElement {
           gap: 0;
           align-items: center;
           line-height: 1.8em;
-          font-size: clamp(20px, 5vw, 30px);
-        }
-
-        @container (max-width: 300px) {
-          .flip-cards-row {
-            font-size: clamp(16px, 4vw, 24px);
-          }
         }
 
         .flip-unit {
-          font-size: clamp(12px, 3.5vw, 16px);
+          font-size: 16px;
           font-weight: 600;
           color: #6b7280;
-          margin-left: clamp(4px, 1.5vw, 8px);
+          margin-left: 8px;
         }
 
         .flip-card {
@@ -1108,51 +1091,53 @@ class ThermostatCard extends HTMLElement {
       </style>
 
       <div class="thermostat-card">
-        <div class="card-header">
-          <div class="entity-name">${name}</div>
-          <div class="status-chip">
-            <span class="status-icon">${colors.icon}</span>
-            <span>${colors.label}</span>
-          </div>
-        </div>
-
-        <div class="main-content">
-          <div class="thermostat-display">
-            <div class="circle-container">
-              <svg class="progress-ring" width="120" height="120">
-                <circle class="progress-ring-bg" cx="60" cy="60" r="52"/>
-                <circle class="progress-ring-target" cx="60" cy="60" r="52"/>
-                <circle class="progress-ring-fill" cx="60" cy="60" r="52"/>
-              </svg>
-              <div class="temp-display">
-                <div>
-                  <span class="current-temp-value">${currentTemp !== null ? currentTemp.toFixed(1) : '--'}</span>
-                  <span class="temp-unit">°</span>
-                </div>
-                <div class="target-temp">
-                  ${t.target}: <span class="target-temp-value">${targetTemp !== null ? targetTemp.toFixed(1) : '--'}°</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="controls">
-              <button class="control-btn" id="decreaseTemp">−</button>
-              <button class="control-btn" id="increaseTemp">+</button>
+        <div class="card-content">
+          <div class="card-header">
+            <div class="entity-name">${name}</div>
+            <div class="status-chip">
+              <span class="status-icon">${colors.icon}</span>
+              <span>${colors.label}</span>
             </div>
           </div>
 
-          ${this._config.show_graph ? `
-            <div class="graph-section">
-              <div class="graph-header">
-                <div class="graph-title">📊 ${t.history}</div>
-                <div class="graph-period">${this._config.graph_hours}h</div>
+          <div class="main-content">
+            <div class="thermostat-display">
+              <div class="circle-container">
+                <svg class="progress-ring" width="120" height="120">
+                  <circle class="progress-ring-bg" cx="60" cy="60" r="52"/>
+                  <circle class="progress-ring-target" cx="60" cy="60" r="52"/>
+                  <circle class="progress-ring-fill" cx="60" cy="60" r="52"/>
+                </svg>
+                <div class="temp-display">
+                  <div>
+                    <span class="current-temp-value">${currentTemp !== null ? currentTemp.toFixed(1) : '--'}</span>
+                    <span class="temp-unit">°</span>
+                  </div>
+                  <div class="target-temp">
+                    ${t.target}: <span class="target-temp-value">${targetTemp !== null ? targetTemp.toFixed(1) : '--'}°</span>
+                  </div>
+                </div>
               </div>
-              <div class="graph-container">
-                <canvas id="temperatureChart"></canvas>
+
+              <div class="controls">
+                <button class="control-btn" id="decreaseTemp">−</button>
+                <button class="control-btn" id="increaseTemp">+</button>
               </div>
-              ${this._config.flip_entity ? this.getFlipCards() : ''}
             </div>
-          ` : ''}
+
+            ${this._config.show_graph ? `
+              <div class="graph-section">
+                <div class="graph-header">
+                  <div class="graph-title">📊 ${t.history}</div>
+                  <div class="graph-period">${this._config.graph_hours}h</div>
+                </div>
+                <div class="graph-container">
+                  <canvas id="temperatureChart"></canvas>
+                </div>
+                ${this._config.flip_entity ? this.getFlipCards() : ''}
+              </div>
+            ` : ''}
+          </div>
         </div>
       </div>
     `;
