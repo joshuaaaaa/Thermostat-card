@@ -157,13 +157,13 @@ class ThermostatCard extends HTMLElement {
     this._chartInstance = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: history.map(d => d.time.toLocaleTimeString('cs-CZ', {
+        labels: history.map(d => d.time.toLocaleTimeString(lang === 'cs' ? 'cs-CZ' : 'en-US', {
           hour: '2-digit',
           minute: '2-digit'
         })),
         datasets: [
           {
-            label: 'Aktuální',
+            label: t.current,
             data: history.map(d => d.temperature),
             borderColor: colors.primary,
             backgroundColor: gradient,
@@ -177,7 +177,7 @@ class ThermostatCard extends HTMLElement {
             pointHoverBorderWidth: 2
           },
           {
-            label: 'Cíl',
+            label: t.target_short,
             data: history.map(d => d.target),
             borderColor: 'rgba(100, 100, 100, 0.4)',
             backgroundColor: 'transparent',
@@ -238,6 +238,37 @@ class ThermostatCard extends HTMLElement {
     });
   }
 
+  getTranslations() {
+    // Získej jazyk z Home Assistant (cs, en, de, etc.)
+    const lang = this._hass?.language || this._hass?.locale?.language || 'en';
+
+    const translations = {
+      cs: {
+        heating: 'Topení',
+        cooling: 'Chlazení',
+        idle: 'Připraveno',
+        off: 'Vypnuto',
+        target: 'Cíl',
+        history: 'Historie teploty',
+        current: 'Aktuální',
+        target_short: 'Cíl'
+      },
+      en: {
+        heating: 'Heating',
+        cooling: 'Cooling',
+        idle: 'Ready',
+        off: 'Off',
+        target: 'Target',
+        history: 'Temperature history',
+        current: 'Current',
+        target_short: 'Target'
+      }
+    };
+
+    // Fallback na angličtinu pro nepodporované jazyky
+    return translations[lang] || translations['en'];
+  }
+
   getStateColors(entity) {
     const hexToRgb = (hex) => {
       const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -256,11 +287,12 @@ class ThermostatCard extends HTMLElement {
       };
     };
 
+    const t = this.getTranslations();
     const baseColors = {
-      heating: { color: this._config.custom_colors ? this._config.color_heating : '#ff6b6b', icon: '🔥', label: 'Topení' },
-      cooling: { color: this._config.custom_colors ? this._config.color_cooling : '#4facfe', icon: '❄️', label: 'Chlazení' },
-      idle: { color: this._config.custom_colors ? this._config.color_idle : '#10b981', icon: '✓', label: 'Připraveno' },
-      off: { color: this._config.custom_colors ? this._config.color_off : '#6b7280', icon: '○', label: 'Vypnuto' }
+      heating: { color: this._config.custom_colors ? this._config.color_heating : '#ff6b6b', icon: '🔥', label: t.heating },
+      cooling: { color: this._config.custom_colors ? this._config.color_cooling : '#4facfe', icon: '❄️', label: t.cooling },
+      idle: { color: this._config.custom_colors ? this._config.color_idle : '#10b981', icon: '✓', label: t.idle },
+      off: { color: this._config.custom_colors ? this._config.color_off : '#6b7280', icon: '○', label: t.off }
     };
 
     // Pokud není entita, vrať výchozí barvu
@@ -483,6 +515,8 @@ class ThermostatCard extends HTMLElement {
     const state = entity.state;
     const name = this._config.name || entity.attributes.friendly_name || 'Termostat';
     const colors = this.getStateColors(entity);
+    const t = this.getTranslations();
+    const lang = this._hass?.language || this._hass?.locale?.language || 'en';
 
     const progress = this.calculateProgress(currentTemp, minTemp, maxTemp);
     const targetProgress = this.calculateProgress(targetTemp, minTemp, maxTemp);
@@ -1049,7 +1083,7 @@ class ThermostatCard extends HTMLElement {
                   <span class="temp-unit">°</span>
                 </div>
                 <div class="target-temp">
-                  Cíl: <span class="target-temp-value">${targetTemp !== null ? targetTemp.toFixed(1) : '--'}°</span>
+                  ${t.target}: <span class="target-temp-value">${targetTemp !== null ? targetTemp.toFixed(1) : '--'}°</span>
                 </div>
               </div>
             </div>
@@ -1063,7 +1097,7 @@ class ThermostatCard extends HTMLElement {
           ${this._config.show_graph ? `
             <div class="graph-section">
               <div class="graph-header">
-                <div class="graph-title">📊 Historie teploty</div>
+                <div class="graph-title">📊 ${t.history}</div>
                 <div class="graph-period">${this._config.graph_hours}h</div>
               </div>
               <div class="graph-container">
