@@ -329,7 +329,7 @@ class ThermostatCard extends HTMLElement {
     const currentTempEl = this.shadowRoot.querySelector('.current-temp-value');
     if (currentTempEl) {
       currentTempEl.style.color = colors.primary;
-      currentTempEl.textContent = currentTemp !== null ? Math.round(currentTemp) : '--';
+      currentTempEl.textContent = currentTemp !== null ? currentTemp.toFixed(1) : '--';
     }
 
     const targetTempEl = this.shadowRoot.querySelector('.target-temp-value');
@@ -1035,7 +1035,7 @@ class ThermostatCard extends HTMLElement {
               </svg>
               <div class="temp-display">
                 <div>
-                  <span class="current-temp-value">${currentTemp !== null ? Math.round(currentTemp) : '--'}</span>
+                  <span class="current-temp-value">${currentTemp !== null ? currentTemp.toFixed(1) : '--'}</span>
                   <span class="temp-unit">°</span>
                 </div>
                 <div class="target-temp">
