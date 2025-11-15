@@ -4,6 +4,9 @@
 
 Compact and elegant thermostat control card with Google Nest-inspired design - perfect for dashboards.
 
+<img width="433" height="237" alt="image" src="https://github.com/user-attachments/assets/fed537d6-c219-479b-a674-ecb1aefdca70" />
+
+
 ![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)
 ![HACS](https://img.shields.io/badge/HACS-compatible-success.svg)
 ![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2024.1+-blue.svg)
@@ -289,4 +292,15 @@ Special thanks to @pqina/flip for the flip animation inspiration.
 
 **v3.0.0** - Professional Flip Display Implementation 🎴
 
-*Last updated: November 2025*
+## Support
+
+If you like this card, please ⭐ star this repository!
+
+Found a bug or have a feature request? Please open an issue.
+
+
+
+## http://buymeacoffee.com/jakubhruby
+
+
+<img width="150" height="150" alt="qr-code" src="https://github.com/user-attachments/assets/2581bf36-7f7d-4745-b792-d1abaca6e57d" />
