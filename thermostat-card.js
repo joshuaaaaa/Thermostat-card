@@ -422,8 +422,8 @@ class ThermostatCard extends HTMLElement {
     const numberOfCards = this._config.flip_number_of_cards;
     const totalDigits = numberOfCards * digitsPerCard;
 
-    // Zarovnání vpravo - doplníme mezery zleva místo nul
-    const paddedString = digitString.padStart(totalDigits, ' ');
+    // Zarovnání vpravo - doplníme nuly zleva
+    const paddedString = digitString.padStart(totalDigits, '0');
     const digits = paddedString.split('');
 
     // Automaticky detekuj jednotku z entity
@@ -449,9 +449,7 @@ class ThermostatCard extends HTMLElement {
       const startIdx = i * digitsPerCard;
       const endIdx = startIdx + digitsPerCard;
       const cardDigits = digits.slice(startIdx, endIdx);
-      const cardValue = cardDigits.join('');
-      // Pokud karta obsahuje pouze mezery, zobrazí se prázdná
-      const displayValue = cardValue.trim() === '' ? '' : cardValue;
+      const displayValue = cardDigits.join('') || '0';
 
       html += `
         <div class="flip-card ${this._config.flip_hide_background ? 'no-background' : ''}" data-card="${i}" style="font-size: ${this._config.flip_font_size};">
@@ -1195,8 +1193,8 @@ class ThermostatCard extends HTMLElement {
     const numberOfCards = this._config.flip_number_of_cards;
     const totalDigits = numberOfCards * digitsPerCard;
 
-    // Zarovnání vpravo - doplníme mezery zleva místo nul
-    const paddedString = digitString.padStart(totalDigits, ' ');
+    // Zarovnání vpravo - doplníme nuly zleva
+    const paddedString = digitString.padStart(totalDigits, '0');
     const digits = paddedString.split('');
     const animDuration = this._config.flip_animation_duration;
 
@@ -1207,9 +1205,7 @@ class ThermostatCard extends HTMLElement {
       const startIdx = i * digitsPerCard;
       const endIdx = startIdx + digitsPerCard;
       const cardDigits = digits.slice(startIdx, endIdx);
-      const cardValue = cardDigits.join('');
-      // Pokud karta obsahuje pouze mezery, zobrazí se prázdná
-      const displayValue = cardValue.trim() === '' ? '' : cardValue;
+      const displayValue = cardDigits.join('') || '0';
 
       // Ulož současnou hodnotu z front panelu
       const frontElement = flipCard.querySelector('.flip-panel-front-text .flip-panel-text-wrapper span');
