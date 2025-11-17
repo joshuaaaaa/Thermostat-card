@@ -417,9 +417,12 @@ class ThermostatCard extends HTMLElement {
     if (isNaN(value)) return '';
 
     const valueStr = value.toFixed(this._config.flip_decimal_places);
-    const digits = valueStr.replace('.', '').split('');
+    const digitString = valueStr.replace('.', '');
     const digitsPerCard = this._config.flip_digits_per_card;
     const numberOfCards = this._config.flip_number_of_cards;
+    const totalDigits = numberOfCards * digitsPerCard;
+    const paddedString = digitString.padStart(totalDigits, '0');
+    const digits = paddedString.split('');
 
     // Automaticky detekuj jednotku z entity
     const autoUnit = flipEntity.attributes.unit_of_measurement || '';
@@ -1183,9 +1186,12 @@ class ThermostatCard extends HTMLElement {
 
   triggerFlipAnimation(newValue) {
     const valueStr = newValue.toFixed(this._config.flip_decimal_places);
-    const digits = valueStr.replace('.', '').split('');
+    const digitString = valueStr.replace('.', '');
     const digitsPerCard = this._config.flip_digits_per_card;
     const numberOfCards = this._config.flip_number_of_cards;
+    const totalDigits = numberOfCards * digitsPerCard;
+    const paddedString = digitString.padStart(totalDigits, '0');
+    const digits = paddedString.split('');
     const animDuration = this._config.flip_animation_duration;
 
     for (let i = 0; i < numberOfCards; i++) {
