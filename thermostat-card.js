@@ -416,14 +416,24 @@ class ThermostatCard extends HTMLElement {
     const value = parseFloat(flipEntity.state);
     if (isNaN(value)) return '';
 
+    // Zaokrouhlit a převést na string s desetinnými místy
     const valueStr = value.toFixed(this._config.flip_decimal_places);
+    // Odstranit desetinnou tečku pro získání všech cifer
     const digitString = valueStr.replace('.', '');
+
     const digitsPerCard = this._config.flip_digits_per_card;
     const numberOfCards = this._config.flip_number_of_cards;
     const totalDigits = numberOfCards * digitsPerCard;
 
-    // Zarovnání vpravo - doplníme nuly zleva
-    const paddedString = digitString.padStart(totalDigits, '0');
+    // Zarovnání vpravo - vezmi poslední N cifer nebo doplň nuly zleva
+    let paddedString;
+    if (digitString.length > totalDigits) {
+      // Pokud je hodnota delší než počet karet, vezmi poslední cifry zprava
+      paddedString = digitString.slice(-totalDigits);
+    } else {
+      // Jinak doplň nuly zleva
+      paddedString = digitString.padStart(totalDigits, '0');
+    }
     const digits = paddedString.split('');
 
     // Automaticky detekuj jednotku z entity
@@ -444,12 +454,19 @@ class ThermostatCard extends HTMLElement {
     // Řádek s kartami a jednotkou
     html += '<div class="flip-cards-row">';
 
-    // Flip karty - PŘESNÁ STRUKTURA z @pqina/flip
+    // Flip karty - vytvořit od konce k začátku pro správné pořadí zprava
+    const cards = [];
     for (let i = 0; i < numberOfCards; i++) {
       const startIdx = i * digitsPerCard;
       const endIdx = startIdx + digitsPerCard;
       const cardDigits = digits.slice(startIdx, endIdx);
       const displayValue = cardDigits.join('') || '0';
+      cards.push({ index: i, value: displayValue });
+    }
+
+    // Vykreslit karty v pořadí zleva doprava
+    for (let i = 0; i < cards.length; i++) {
+      const displayValue = cards[i].value;
 
       html += `
         <div class="flip-card ${this._config.flip_hide_background ? 'no-background' : ''}" data-card="${i}" style="font-size: ${this._config.flip_font_size};">
@@ -1193,8 +1210,13 @@ class ThermostatCard extends HTMLElement {
     const numberOfCards = this._config.flip_number_of_cards;
     const totalDigits = numberOfCards * digitsPerCard;
 
-    // Zarovnání vpravo - doplníme nuly zleva
-    const paddedString = digitString.padStart(totalDigits, '0');
+    // Zarovnání vpravo - vezmi poslední N cifer nebo doplň nuly zleva
+    let paddedString;
+    if (digitString.length > totalDigits) {
+      paddedString = digitString.slice(-totalDigits);
+    } else {
+      paddedString = digitString.padStart(totalDigits, '0');
+    }
     const digits = paddedString.split('');
     const animDuration = this._config.flip_animation_duration;
 
