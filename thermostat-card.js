@@ -421,7 +421,9 @@ class ThermostatCard extends HTMLElement {
     const digitsPerCard = this._config.flip_digits_per_card;
     const numberOfCards = this._config.flip_number_of_cards;
     const totalDigits = numberOfCards * digitsPerCard;
-    const paddedString = digitString.padStart(totalDigits, '0');
+
+    // Zarovnání vpravo - doplníme mezery zleva místo nul
+    const paddedString = digitString.padStart(totalDigits, ' ');
     const digits = paddedString.split('');
 
     // Automaticky detekuj jednotku z entity
@@ -447,7 +449,9 @@ class ThermostatCard extends HTMLElement {
       const startIdx = i * digitsPerCard;
       const endIdx = startIdx + digitsPerCard;
       const cardDigits = digits.slice(startIdx, endIdx);
-      const displayValue = cardDigits.join('') || '0';
+      const cardValue = cardDigits.join('');
+      // Pokud karta obsahuje pouze mezery, zobrazí se prázdná
+      const displayValue = cardValue.trim() === '' ? '' : cardValue;
 
       html += `
         <div class="flip-card ${this._config.flip_hide_background ? 'no-background' : ''}" data-card="${i}" style="font-size: ${this._config.flip_font_size};">
@@ -1190,7 +1194,9 @@ class ThermostatCard extends HTMLElement {
     const digitsPerCard = this._config.flip_digits_per_card;
     const numberOfCards = this._config.flip_number_of_cards;
     const totalDigits = numberOfCards * digitsPerCard;
-    const paddedString = digitString.padStart(totalDigits, '0');
+
+    // Zarovnání vpravo - doplníme mezery zleva místo nul
+    const paddedString = digitString.padStart(totalDigits, ' ');
     const digits = paddedString.split('');
     const animDuration = this._config.flip_animation_duration;
 
@@ -1201,7 +1207,9 @@ class ThermostatCard extends HTMLElement {
       const startIdx = i * digitsPerCard;
       const endIdx = startIdx + digitsPerCard;
       const cardDigits = digits.slice(startIdx, endIdx);
-      const displayValue = cardDigits.join('') || '0';
+      const cardValue = cardDigits.join('');
+      // Pokud karta obsahuje pouze mezery, zobrazí se prázdná
+      const displayValue = cardValue.trim() === '' ? '' : cardValue;
 
       // Ulož současnou hodnotu z front panelu
       const frontElement = flipCard.querySelector('.flip-panel-front-text .flip-panel-text-wrapper span');
