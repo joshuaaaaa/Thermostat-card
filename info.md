@@ -1,5 +1,9 @@
 # Thermostat Control Card
 
+<p align="center">
+  <img src="jh.png" alt="JH Logo" width="120" />
+</p>
+
 Moderní a barevná karta pro ovládání termostatů v Home Assistant.
 
 ## Funkce
