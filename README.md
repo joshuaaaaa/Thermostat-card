@@ -1,8 +1,8 @@
-# 🌡️ Thermostat Control Card for Home Assistant
-
-<p align="center">
+<p align="left">
   <img src="jh.png" alt="JH Logo" width="120" />
-</p>
+</p># 🌡️ Thermostat Control Card for Home Assistant
+
+
 
 **[🇨🇿 Česká verze](README.cs.md)** | **[🇬🇧 English (current)]**
 
