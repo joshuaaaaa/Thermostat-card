@@ -1,5 +1,9 @@
 # 🌡️ Thermostat Control Card for Home Assistant
 
+<p align="center">
+  <img src="jh.png" alt="JH Logo" width="120" />
+</p>
+
 **[🇨🇿 Česká verze](README.cs.md)** | **[🇬🇧 English (current)]**
 
 Compact and elegant thermostat control card with Google Nest-inspired design - perfect for dashboards.
