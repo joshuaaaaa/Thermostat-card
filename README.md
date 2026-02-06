@@ -1,6 +1,4 @@
-<p align="left">
-  <img src="jh.png" alt="JH Logo" width="120" />
-</p># 🌡️ Thermostat Control Card for Home Assistant
+# 🌡️ Thermostat Control Card for Home Assistant
 
 
 
